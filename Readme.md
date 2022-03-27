@@ -1,4 +1,4 @@
-# LazBaseUtils
+# ObjPasUtils
 
 This Package aims at providing a set of useful functions, and types for FreePascal.
 

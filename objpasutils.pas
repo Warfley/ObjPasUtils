@@ -2,7 +2,7 @@
   This source is only used to compile and install the package.
  }
 
-unit LazBaseUtils;
+unit ObjPasUtils;
 
 {$warn 5023 off : no warning about unused units}
 interface
@@ -20,5 +20,5 @@ begin
 end;
 
 initialization
-  RegisterPackage('LazBaseUtils', @Register);
+  RegisterPackage('ObjPasUtils', @Register);
 end.

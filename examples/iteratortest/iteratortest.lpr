@@ -3,7 +3,7 @@ program iteratortest;
 {$mode Delphi}{$H+}
 
 uses
-  Classes, Contnrs, SysUtils, iterators, iterators.base, Generics.Collections, Tuple;
+  Classes, Contnrs, SysUtils, iterators, iterators.base, Generics.Collections, TupleTypes;
 
 var
   Data: Array of Integer = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
