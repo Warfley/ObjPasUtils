@@ -5,7 +5,7 @@ unit iterators.helper;
 interface
 
 uses
-  iterators.base, iterators.collector, TupleTypes;
+  iterators.base, TupleTypes;
 
 type
   // Iterators that do not warrent their own unit
@@ -31,19 +31,6 @@ type
     FStepSize: SizeInt;
   public
     constructor Create(AIterator: IIteratorType; StepSize: SizeInt);
-
-    function MoveNext: Boolean; override;
-    function GetCurrent: T; override;
-  end;
-
-  { TReverseIterator }
-
-  generic TReverseIterator<T> = class(specialize TIterator<T>)
-  private
-    FIndex: SizeInt;
-    FData: specialize TArray<T>;
-  public
-    constructor Create(AIterator: specialize IIterator<T>);
 
     function MoveNext: Boolean; override;
     function GetCurrent: T; override;
@@ -95,26 +82,6 @@ end;
 function TStepIterator.GetCurrent: T;
 begin
   Result := IteratorCurrent;
-end;
-
-{ TReverseIterator }
-
-constructor TReverseIterator.Create(AIterator: specialize IIterator<T>);
-begin
-  inherited Create;
-  FData := specialize CollectArrayGeometric<T>(AIterator);
-  FIndex := Length(FData);
-end;
-
-function TReverseIterator.MoveNext: Boolean;
-begin
-  Dec(FIndex);
-  Result := FIndex >= 0;
-end;
-
-function TReverseIterator.GetCurrent: T;
-begin
-  Result := FData[FIndex]
 end;
 
 end.

@@ -11,7 +11,7 @@ uses
   TupleTypes, DynamicTypes, finalizers, functypes, iterators, iterators.base, 
   iterators.map, iterators.filter, iterators.take, iterators.skip, 
   iterators.typing, iterators.helper, nonetype, iterators.collector, 
-  LazarusPackageIntf;
+  iterators.ordering, LazarusPackageIntf;
 
 implementation
 

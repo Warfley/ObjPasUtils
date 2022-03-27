@@ -16,6 +16,7 @@ Amongst others those functions are:
 * Step: Skips elements in steps, i.e. Step(Iterator, 2) will only give every other element from Interator
 * Fold/Reduce: Applies a function to each of the values and the result of the previous step to compute a final result over the whole stream (e.g. a sum over all elements). Not possible on infinite streams.
 * Reverse: Reverses a stream from last element to first. First requires loading all elements into memory before repeating them in opposite order. Not possible on infinite streams
+* Sorted: Returns all elements sorted according to a less or compare function. Collects all elements to sort, not possible on infinite streams
 * Next: Get the next element from an Iterator
 * Last: Get the last element from an Iterator, not possible on infinite streams
 * Collect, CollectArray: Collects all the elements from the stream into a container (e.g. List, Array, TStringList, etc)
@@ -109,7 +110,12 @@ begin
 ```
 It can be tweaked with the option boolean argument, to either grow the array geometrically (growing by doubling in size), or linear (growing for each element individually). Geometric growth is usually recommended (the same growth behavior as implemented by TList) as it results usually in a much better performance.
 
-## Implicit Specialization
+## Parallelization
+Theoretically iterators could be used to split tasks amongst multiple threads (See Java parallel streams).
+Currently this is not supported by this library, but is a use case that will be considered for the future.
+
+## Notes
+### Implicit Specialization
 A new feature currently in development is implicit specialization for generic functions. This would allow leaving out the generic typing for the functions.
 This would massively improve the readability of these functions presented here:
 ```pascal
@@ -126,6 +132,30 @@ HexStr := Reduce<String>(Map<Byte, String>(Iterate<Byte>(arr), ByteToHex), Conca
 // Mode ObjFPC:
 HexStr := specialize Reduce<String>(specialize Map<Byte, String>(specialize Iterate<Byte>(arr), @ByteToHex), @ConcatStr);
 ```
+
+### Efficiency
+Iterators do not provide the most efficient way to iterate through data. The creation of an iterator to iterate an array creates some overhead which could be avoided by clever coding.
+This library is designed to trade optimisation for comfort. For the very most cases it should be fast enough, but sometimes it might introduce additional overhead.
+
+Some operations, like reversing or sorting introduce a rather large overhead as all the data is collected and stored temporarily in the iterators.
+E.g.
+```pascal
+  arr := CollectArray<String>(Sorted<String>(Iterate<String>(arr), CompareStr));
+```
+Will be less efficient than an in-place sorting algorithm like quick or heapsort on the same array.
+
+Other operations like converting a TList to an array:
+```pascal
+  arr := CollectArray<Integer>(Iterate<Integer>(list));
+```
+Will only introduce a slight overhead, while being much more concise than manual array creation:
+```pascal
+  SetLength(arr, list.Count);
+  for i := 0 to list.Count - 1 do
+    arr[i] := list[i]
+```
+
+
 
 ## Examples
 See `examples/iteratortest` for examples covering all currently available functionalities

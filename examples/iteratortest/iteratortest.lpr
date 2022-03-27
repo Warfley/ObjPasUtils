@@ -132,6 +132,17 @@ begin
   WriteLn;
 end;
 
+procedure SortedTest;
+var
+  s: String;
+  arr: Array of String = ['Banana', 'Apple', 'Cherry'];
+begin
+  Write('Testing Sort Banana, Apple, Cherry:');
+  for s in Sorted<String>(Iterate<String>(arr), CompareStr) do
+    Write(' ', s);
+  WriteLn;
+end;
+
 function isEven(AValue: Integer): Boolean;
 begin
   Result := AValue mod 2 = 0;
@@ -348,6 +359,7 @@ begin
   IterateObjectListTest;
   IndexTest;
   ReverseTest;
+  SortedTest;
   StepTest;
   FilterTest;
   MapTest;

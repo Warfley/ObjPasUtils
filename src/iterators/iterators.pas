@@ -6,8 +6,8 @@ interface
 
 uses
   Classes, SysUtils, functypes, iterators.base, iterators.map, iterators.filter,
-  iterators.take, iterators.skip, iterators.typing, iterators.helper, iterators.collector,
-  Generics.Collections, TupleTypes, NoneType, DynamicTypes;
+  iterators.take, iterators.skip, iterators.typing, iterators.ordering, iterators.helper,
+  iterators.collector, Generics.Collections, TupleTypes, NoneType, DynamicTypes;
 
 type
   EEndOfIterator = class(Exception);
@@ -97,8 +97,26 @@ generic function Index<T>(AIterator: specialize IIterator<T>): specialize IItera
 // Step
 generic function Step<T>(AIterator: specialize IIterator<T>; StepSize: SizeInt): specialize IIterator<T>; inline;
 
-// Reverse
+// Ordering
 generic function Reverse<T>(AIterator: specialize IIterator<T>): specialize IIterator<T>; inline;
+// Sorting: Compare function
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TCompareFunction): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TCompareMethod): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TConstCompareFunction): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TConstCompareMethod): specialize IIterator<T>; overload; inline;
+// Sorting: Less function
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TLessFunction): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TLessMethod): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TConstLessFunction): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TConstLessMethod): specialize IIterator<T>; overload; inline;
 
 // Get Next element from iterator
 generic function Next<T>(AIterator: specialize IIterator<T>; out AValue: T): Boolean; overload; inline;
@@ -353,11 +371,61 @@ begin
   Result := specialize TStepIterator<T>.Create(AIterator, StepSize);
 end;
 
-{ Reverse }
+{ Ordering }
 generic function Reverse<T>(AIterator: specialize IIterator<T>): specialize IIterator<T>;
 begin
   Result := specialize TReverseIterator<T>.Create(AIterator);
 end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TCompareFunction): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TCompareMethod): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TConstCompareFunction): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TConstCompareMethod): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+// Sorting: Less function
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TLessFunction): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TLessMethod): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TConstLessFunction): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TSortingIterator<T>.TConstLessMethod): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
 
 { Next/Last Functions }
 
