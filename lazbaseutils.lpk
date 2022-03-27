@@ -14,8 +14,8 @@
     </CompilerOptions>
     <Files>
       <Item>
-        <Filename Value="src\tuple\tuple.pas"/>
-        <UnitName Value="Tuple"/>
+        <Filename Value="src\tuple\tupletypes.pas"/>
+        <UnitName Value="tupletypes"/>
       </Item>
       <Item>
         <Filename Value="src\dynamictypes\dynamictypes.pas"/>

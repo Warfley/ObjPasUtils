@@ -1,4 +1,4 @@
-unit Tuple;
+unit TupleTypes;
 
 {$mode objfpc}{$H+}
 {$ModeSwitch advancedrecords}
@@ -223,7 +223,7 @@ type
                      const AFifth: TNoneType);
     procedure Unpack(out AFirst: TFirst; const ASecond: TNoneType;
                      const AThird: TNoneType; const AFourth: TNoneType;
-                     out AFifth: TNoneType);
+                     const AFifth: TNoneType);
     procedure Unpack(const AFirst: TNoneType; const ASecond: TNoneType;
                      const AThird: TNoneType; const AFourth: TNoneType;
                      const AFifth: TNoneType);
@@ -241,6 +241,20 @@ generic function Quintuple<TFirst, TSecond, TThird, TFourth, TFifth>(
   constref AFirst: TFirst; constref ASecond: TSecond; constref AThird: TThird;
   constref AFourth: TFourth; constref AFifth: TFifth):
   specialize TQuintuple<TFirst, TSecond, TThird, TFourth, TFifth>; inline;
+
+
+generic function Tuple<TFirst, TSecond>(constref AFirst: TFirst; constref ASecond: TSecond):
+  specialize TPair<TFirst, TSecond>; overload; inline;
+generic function Tuple<TFirst, TSecond, TThird>(
+  constref AFirst: TFirst; constref ASecond: TSecond; constref AThird: TThird):
+  specialize TTriple<TFirst, TSecond, TThird>; overload; inline;
+generic function Tuple<TFirst, TSecond, TThird, TFourth>(
+  constref AFirst: TFirst; constref ASecond: TSecond; constref AThird: TThird;
+  constref AFourth: TFourth): specialize TQuadruple<TFirst, TSecond, TThird, TFourth>; overload; inline;
+generic function Tuple<TFirst, TSecond, TThird, TFourth, TFifth>(
+  constref AFirst: TFirst; constref ASecond: TSecond; constref AThird: TThird;
+  constref AFourth: TFourth; constref AFifth: TFifth):
+  specialize TQuintuple<TFirst, TSecond, TThird, TFourth, TFifth>; overload; inline;
 
 implementation
 
@@ -266,6 +280,36 @@ begin
 end;
 
 generic function Quintuple<TFirst, TSecond, TThird, TFourth, TFifth>(
+  constref AFirst: TFirst; constref ASecond: TSecond; constref AThird: TThird;
+  constref AFourth: TFourth; constref AFifth: TFifth):
+  specialize TQuintuple<TFirst, TSecond, TThird, TFourth, TFifth>;
+begin
+  Result := specialize TQuintuple<TFirst, TSecond, TThird, TFourth, TFifth>.Create(
+    AFirst, ASecond, AThird, AFourth, AFifth);
+end;
+
+generic function Tuple<TFirst, TSecond>(constref AFirst: TFirst; constref ASecond: TSecond):
+  specialize TPair<TFirst, TSecond>;
+begin
+  Result := specialize TPair<TFirst, TSecond>.Create(AFirst, ASecond);
+end;
+
+generic function Tuple<TFirst, TSecond, TThird>(
+  constref AFirst: TFirst; constref ASecond: TSecond; constref AThird: TThird):
+  specialize TTriple<TFirst, TSecond, TThird>;
+begin
+  Result := specialize TTriple<TFirst, TSecond, TThird>.Create(AFirst, ASecond, AThird);
+end;
+
+generic function Tuple<TFirst, TSecond, TThird, TFourth>(
+  constref AFirst: TFirst; constref ASecond: TSecond; constref AThird: TThird;
+  constref AFourth: TFourth): specialize TQuadruple<TFirst, TSecond, TThird, TFourth>;
+begin
+  Result := specialize TQuadruple<TFirst, TSecond, TThird, TFourth>.Create(
+    AFirst, ASecond, AThird, AFourth);
+end;
+
+generic function Tuple<TFirst, TSecond, TThird, TFourth, TFifth>(
   constref AFirst: TFirst; constref ASecond: TSecond; constref AThird: TThird;
   constref AFourth: TFourth; constref AFifth: TFifth):
   specialize TQuintuple<TFirst, TSecond, TThird, TFourth, TFifth>;
@@ -597,13 +641,13 @@ begin
 end;
 
 procedure TQuintuple.Unpack(out AFirst: TFirst; const ASecond: TNoneType;
-  const AThird: TNoneType; const AFourth: TNoneType; out AFifth: TNoneType);
+  const AThird: TNoneType; const AFourth: TNoneType; const AFifth: TNoneType);
 begin
   AFirst := First;
   //ASecond := Second;
   //AThird := Third;
   //AFourth := Fourth;
-  AFifth := Fifth;
+  //AFifth := Fifth;
 end;
 
 procedure TQuintuple.Unpack(const AFirst: TNoneType; const ASecond: TNoneType;

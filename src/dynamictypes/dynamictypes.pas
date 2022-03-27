@@ -24,7 +24,8 @@ type
   public
     function Mutable: PData;
     function Value: T; {$IFDEF INLINING}inline;{$ENDIF}
-    function GetOrDefault(constref DefaultValue: T): T;{$IFDEF INLINING}inline;{$ENDIF}
+    function GetOrDefault(constref DefaultValue: T): T; overload; {$IFDEF INLINING}inline;{$ENDIF}
+    function GetOrDefault: T; overload; {$IFDEF INLINING}inline;{$ENDIF}
     function HasValue: Boolean; {$IFDEF INLINING}inline;{$ENDIF}
 
     constructor Create(constref AValue: T);
@@ -58,10 +59,12 @@ type
     function isSecond: Boolean; {$IFDEF INLINING}inline;{$ENDIF}
     function FirstMutable: PFirst;
     function First: TFirst; {$IFDEF INLINING}inline;{$ENDIF}
-    function FirstOrDefault(constref DefaultValue: TFirst): TFirst;{$IFDEF INLINING}inline;{$ENDIF}
+    function FirstOrDefault(constref DefaultValue: TFirst): TFirst; overload;{$IFDEF INLINING}inline;{$ENDIF}
+    function FirstOrDefault: TFirst; overload; {$IFDEF INLINING}inline;{$ENDIF}
     function SecondMutable: PSecond;
     function Second: TSecond; {$IFDEF INLINING}inline;{$ENDIF}
     function SecondOrDefault(constref DefaultValue: TSecond): TSecond;{$IFDEF INLINING}inline;{$ENDIF}
+    function SecondOrDefault: TSecond; overload;{$IFDEF INLINING}inline;{$ENDIF}
 
 
     constructor FromFirst(constref AValue: TFirst);
@@ -143,6 +146,11 @@ begin
     Result := DefaultValue;
 end;
 
+function TUnion.FirstOrDefault: TFirst;
+begin
+  Result := FirstOrDefault(Default(TFirst));
+end;
+
 function TUnion.SecondMutable: PSecond;
 begin
   if not isSecond then
@@ -161,6 +169,11 @@ begin
     Result := FSecond
   else
     Result := DefaultValue;
+end;
+
+function TUnion.SecondOrDefault: TSecond;
+begin
+  Result := SecondOrDefault(Default(TSecond));
 end;
 
 constructor TUnion.FromFirst(constref AValue: TFirst);
@@ -259,6 +272,16 @@ begin
     Result := FValue
   else
     Result := DefaultValue;
+end;
+
+function TOptional.GetOrDefault: T;
+begin
+  // usually would call just GetOrDefault(Default(T))
+  // but this causes internalerror
+  if FHasValue then
+    Result := FValue
+  else
+    Result := Default(T);
 end;
 
 function TOptional.HasValue: Boolean;

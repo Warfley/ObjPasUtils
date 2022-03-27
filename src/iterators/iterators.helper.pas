@@ -5,7 +5,7 @@ unit iterators.helper;
 interface
 
 uses
-  iterators.base, iterators.collector, Tuple;
+  iterators.base, iterators.collector, TupleTypes;
 
 type
   // Iterators that do not warrent their own unit

@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, functypes, iterators.base, iterators.map, iterators.filter,
   iterators.take, iterators.skip, iterators.typing, iterators.helper, iterators.collector,
-  Generics.Collections, Tuple, NoneType, DynamicTypes;
+  Generics.Collections, TupleTypes, NoneType, DynamicTypes;
 
 type
   EEndOfIterator = class(Exception);
