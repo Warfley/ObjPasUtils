@@ -3,7 +3,7 @@ program optionaltest;
 {$mode delphi}{$H+}
 
 uses
-  SysUtils, DynamicTypes;
+  SysUtils, DynamicTypes, NoneType;
 
 procedure TestOptionalInitialization;
 var
@@ -67,12 +67,34 @@ begin
   end;
 end;
 
+procedure TestOptionalMap;
+var
+  optInt: TOptional<Integer>;
+  optStr: TOptional<String>;
+begin
+  Write('Testing map Int->Str on empty value: ');
+  optInt := None;
+  optStr := Map<Integer, String>(optInt, IntToHex);
+  if OptStr then
+    WriteLn('Opt str is: ', OptStr.Value)
+  else
+    WriteLn('OptStr has no Value');
+  Write('Testing map Int->Str on 42: ');
+  optInt := 42;
+  optStr := Map<Integer, String>(optInt, IntToHex);
+  if OptStr then
+    WriteLn('Opt str is: ', OptStr.Value)
+  else
+    WriteLn('OptStr has no Value');
+end;
+
 begin
   TestOptionalInitialization;
   TestOptionalBoolConversion;
   TestOptionalGetOrDefault;
   TestOptionalPointerAccess;
   TestOptionalException;
+  TestOptionalMap;
 
   ReadLn;
 end.
