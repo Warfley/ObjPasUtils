@@ -1,6 +1,7 @@
 program iteratortest;
 
 {$mode Delphi}{$H+}
+{$ModeSwitch nestedprocvars}
 
 uses
   Classes, Contnrs, SysUtils, iterators, iterators.base, Generics.Collections, TupleTypes;
@@ -161,9 +162,15 @@ end;
 procedure MapTest;
 var
   s: String;
+
+// Implicit conversion doesn't work with overloaded functions
+function Int2Hex(i: Integer): String;
+begin
+  Result := IntToHex(i);
+end;
 begin
   Write('Testing Map inttohex:');
-  for s in Map<Integer, String>(Iterate<Integer>(Data), IntToHex) do
+  for s in Map<Integer, String>(Iterate<Integer>(Data), Int2Hex) do
     Write(' ', s);
   WriteLn;
 end;
@@ -218,14 +225,15 @@ begin
   WriteLn;
 end;
 
+procedure ReduceTest;
+var
+  sum: Integer;
+
 function Add(A, B: Integer): Integer;
 begin
   Result := A + B;
 end;
 
-procedure ReduceTest;
-var
-  sum: Integer;
 begin
   Write('Testing Reduce Add: ');
   sum := Reduce<Integer>(Iterate<Integer>(Data), Add);
@@ -235,9 +243,15 @@ end;
 procedure CollectStringListTest;
 var
   sl: TStringList;
+
+// Implicit conversion doesn't work with overloaded functions
+function Int2Hex(i: Integer): String;
+begin
+  Result := IntToHex(i);
+end;
 begin
   WriteLn('Teesting Collect as TStringList: ');
-  sl := Collect<String, TStringList>(Map<Integer, String>(Iterate<Integer>(Data), IntToHex));
+  sl := Collect<String, TStringList>(Map<Integer, String>(Iterate<Integer>(Data), Int2Hex));
   try
     WriteLn(sl.Text);
   finally

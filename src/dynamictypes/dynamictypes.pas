@@ -86,13 +86,7 @@ function EmptyOptional: TNoneType;
 function EmptyUnion: TNoneType;
 
 generic function Map<TFrom, TTo>(constref Opt: specialize TOptional<TFrom>;
-                                 MapFunc: specialize TUnaryFunction<TTo, TFrom>): specialize TOptional<TTo>; overload;
-generic function Map<TFrom, TTo>(constref Opt: specialize TOptional<TFrom>;
-                                 MapFunc: specialize TUnaryMethodFunction<TTo, TFrom>): specialize TOptional<TTo>; overload;
-generic function Map<TFrom, TTo>(constref Opt: specialize TOptional<TFrom>;
-                                 MapFunc: specialize TConstUnaryFunction<TTo, TFrom>): specialize TOptional<TTo>; overload;
-generic function Map<TFrom, TTo>(constref Opt: specialize TOptional<TFrom>;
-                                 MapFunc: specialize TConstUnaryMethodFunction<TTo, TFrom>): specialize TOptional<TTo>; overload;
+                                 MapFunc: specialize TAnyUnaryFunction<TTo, TFrom>): specialize TOptional<TTo>; overload;
 
 implementation
 
@@ -330,33 +324,11 @@ begin
   Result := not AOpt.FHasValue;
 end;
 generic function Map<TFrom, TTo>(constref Opt: specialize TOptional<TFrom>;
-                                 MapFunc: specialize TUnaryFunction<TTo, TFrom>): specialize TOptional<TTo>;
+                                 MapFunc: specialize TAnyUnaryFunction<TTo, TFrom>): specialize TOptional<TTo>;
 begin
   Result := EmptyOptional;
   if Opt.HasValue then
-    Result := MapFunc(Opt.Value);
-end;
-
-generic function Map<TFrom, TTo>(constref Opt: specialize TOptional<TFrom>;
-                                 MapFunc: specialize TUnaryMethodFunction<TTo, TFrom>): specialize TOptional<TTo>;
-begin
-  Result := EmptyOptional;
-  if Opt.HasValue then
-    Result := MapFunc(Opt.Value);
-end;
-generic function Map<TFrom, TTo>(constref Opt: specialize TOptional<TFrom>;
-                                 MapFunc: specialize TConstUnaryFunction<TTo, TFrom>): specialize TOptional<TTo>;
-begin
-  Result := EmptyOptional;
-  if Opt.HasValue then
-    Result := MapFunc(Opt.Value);
-end;
-generic function Map<TFrom, TTo>(constref Opt: specialize TOptional<TFrom>;
-                                 MapFunc: specialize TConstUnaryMethodFunction<TTo, TFrom>): specialize TOptional<TTo>;
-begin
-  Result := EmptyOptional;
-  if Opt.HasValue then
-    Result := MapFunc(Opt.Value);
+    Result := MapFunc.apply(Opt.Value);
 end;
 
 end.

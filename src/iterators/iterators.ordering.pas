@@ -27,35 +27,14 @@ type
   generic TSortingIterator<T> = class(specialize TIterator<T>)
   public type
     IIteratorType = specialize IIterator<T>;
+    TCompareFunction = specialize TAnyBinaryFunction<Integer, T, T>;
+    TLessFunction = specialize TAnyBinaryFunction<Boolean, T, T>;
 
-    TCompareFunction = specialize TBinaryFunction<Integer, T, T>;
-    TCompareMethod = specialize TBinaryMethodFunction<Integer, T, T>;
-    TConstCompareFunction = specialize TConstBinaryFunction<Integer, T, T>;
-    TConstCompareMethod = specialize TConstBinaryMethodFunction<Integer, T, T>;
-
-    TLessFunction = specialize TBinaryFunction<Boolean, T, T>;
-    TLessMethod = specialize TBinaryMethodFunction<Boolean, T, T>;
-    TConstLessFunction = specialize TConstBinaryFunction<Boolean, T, T>;
-    TConstLessMethod = specialize TConstBinaryMethodFunction<Boolean, T, T>;
   private type
-    TCompareFunctionData = record
-      case FuncType: TFunctionType of
-        ftFunction: (Func: TCompareFunction);
-        ftMethod: (Method: TCompareMethod);
-        ftConstFunction: (ConstFunc: TConstCompareFunction);
-        ftConstMethod: (ConstMethod: TConstCompareMethod);
-    end;
-    TLessFunctionData = record
-      case FuncType: TFunctionType of
-        ftFunction: (Func: TLessFunction);
-        ftMethod: (Method: TLessMethod);
-        ftConstFunction: (ConstFunc: TConstLessFunction);
-        ftConstMethod: (ConstMethod: TConstLessMethod);
-    end;
     TSortingFunctionData = record
       case isLess: Boolean of
-      True: (LessFunctionData: TLessFunctionData);
-      False: (CompareFunctionData: TCompareFunctionData);
+      True: (LessFunction: TLessFunction);
+      False: (CompareFunction: TCompareFunction);
     end;
   private
     // Heap functions
@@ -72,8 +51,6 @@ type
     FSortingFunctionData: TSortingFunctionData;
     FFirstMove: Boolean;
 
-    function CompareLess(const LHS, RHS: T; const LessFunction: TLessFunctionData): Boolean;
-    function CompareCompare(const LHS, RHS: T; const CompareFunctioN: TCompareFunctionData): Boolean;
     function Compare(LIndex, RIndex: SizeInt): Boolean; inline;
 
     procedure Swap(AIndex, BIndex: SizeInt);
@@ -83,13 +60,7 @@ type
   public
     constructor Create(AIterator: IIteratorType; ASortingFunction: TSortingFunctionData); overload;
     constructor Create(AIterator: IIteratorType; ACompareFunction: TCompareFunction); overload;
-    constructor Create(AIterator: IIteratorType; ACompareFunction: TCompareMethod); overload;
-    constructor Create(AIterator: IIteratorType; ACompareFunction: TConstCompareFunction); overload;
-    constructor Create(AIterator: IIteratorType; ACompareFunction: TConstCompareMethod); overload;
     constructor Create(AIterator: IIteratorType; ALessFunction: TLessFunction); overload;
-    constructor Create(AIterator: IIteratorType; ALessFunction: TLessMethod); overload;
-    constructor Create(AIterator: IIteratorType; ALessFunction: TConstLessFunction); overload;
-    constructor Create(AIterator: IIteratorType; ALessFunction: TConstLessMethod); overload;
 
     function GetCurrent: T; override;
     function MoveNext: Boolean; override;
@@ -131,34 +102,12 @@ begin
   Result := AIndex * 2 + 2;
 end;
 
-function TSortingIterator.CompareLess(const LHS, RHS: T;
-  const LessFunction: TLessFunctionData): Boolean;
-begin
-  case LessFunction.FuncType of
-  ftFunction: Result := LessFunction.Func(LHS, RHS);
-  ftMethod: Result := LessFunction.Method(LHS, RHS);
-  ftConstFunction: Result := LessFunction.ConstFunc(LHS, RHS);
-  ftConstMethod: Result := LessFunction.ConstMethod(LHS, RHS);
-  end;
-end;
-
-function TSortingIterator.CompareCompare(const LHS, RHS: T;
-  const CompareFunctioN: TCompareFunctionData): Boolean;
-begin
-  case CompareFunctioN.FuncType of
-  ftFunction: Result := CompareFunctioN.Func(LHS, RHS) < 0;
-  ftMethod: Result := CompareFunctioN.Method(LHS, RHS) < 0;
-  ftConstFunction: Result := CompareFunctioN.ConstFunc(LHS, RHS) < 0;
-  ftConstMethod: Result := CompareFunctioN.ConstMethod(LHS, RHS) < 0;
-  end;
-end;
-
 function TSortingIterator.Compare(LIndex, RIndex: SizeInt): Boolean;
 begin
   if FSortingFunctionData.isLess then
-    Result := CompareLess(FData[LIndex], FData[RIndex], FSortingFunctionData.LessFunctionData)
+    Result := FSortingFunctionData.LessFunction.apply(FData[LIndex], FData[RIndex])
   else
-    Result := CompareCompare(FData[LIndex], FData[RIndex], FSortingFunctionData.CompareFunctionData);
+    Result := FSortingFunctionData.CompareFunction.apply(FData[LIndex], FData[RIndex]) < 0;
 end;
 
 procedure TSortingIterator.Swap(AIndex, BIndex: SizeInt);
@@ -232,41 +181,7 @@ var
   SortingData: TSortingFunctionData;
 begin
   SortingData.isLess := False;
-  SortingData.CompareFunctionData.FuncType := ftFunction;
-  SortingData.CompareFunctionData.Func := ACompareFunction;
-  Create(AIterator, SortingData);
-end;
-
-constructor TSortingIterator.Create(AIterator: IIteratorType;
-  ACompareFunction: TCompareMethod);
-var
-  SortingData: TSortingFunctionData;
-begin
-  SortingData.isLess := False;
-  SortingData.CompareFunctionData.FuncType := ftMethod;
-  SortingData.CompareFunctionData.Method := ACompareFunction;
-  Create(AIterator, SortingData);
-end;
-
-constructor TSortingIterator.Create(AIterator: IIteratorType;
-  ACompareFunction: TConstCompareFunction);
-var
-  SortingData: TSortingFunctionData;
-begin
-  SortingData.isLess := False;
-  SortingData.CompareFunctionData.FuncType := ftConstFunction;
-  SortingData.CompareFunctionData.ConstFunc := ACompareFunction;
-  Create(AIterator, SortingData);
-end;
-
-constructor TSortingIterator.Create(AIterator: IIteratorType;
-  ACompareFunction: TConstCompareMethod);
-var
-  SortingData: TSortingFunctionData;
-begin
-  SortingData.isLess := False;
-  SortingData.CompareFunctionData.FuncType := ftConstMethod;
-  SortingData.CompareFunctionData.ConstMethod := ACompareFunction;
+  SortingData.CompareFunction := ACompareFunction;
   Create(AIterator, SortingData);
 end;
 
@@ -276,41 +191,7 @@ var
   SortingData: TSortingFunctionData;
 begin
   SortingData.isLess := True;
-  SortingData.LessFunctionData.FuncType := ftFunction;
-  SortingData.LessFunctionData.Func := ALessFunction;
-  Create(AIterator, SortingData);
-end;
-
-constructor TSortingIterator.Create(AIterator: IIteratorType;
-  ALessFunction: TLessMethod);
-var
-  SortingData: TSortingFunctionData;
-begin
-  SortingData.isLess := True;
-  SortingData.LessFunctionData.FuncType := ftMethod;
-  SortingData.LessFunctionData.Method:= ALessFunction;
-  Create(AIterator, SortingData);
-end;
-
-constructor TSortingIterator.Create(AIterator: IIteratorType;
-  ALessFunction: TConstLessFunction);
-var
-  SortingData: TSortingFunctionData;
-begin
-  SortingData.isLess := True;
-  SortingData.LessFunctionData.FuncType := ftConstFunction;
-  SortingData.LessFunctionData.ConstFunc := ALessFunction;
-  Create(AIterator, SortingData);
-end;
-
-constructor TSortingIterator.Create(AIterator: IIteratorType;
-  ALessFunction: TConstLessMethod);
-var
-  SortingData: TSortingFunctionData;
-begin
-  SortingData.isLess := True;
-  SortingData.LessFunctionData.FuncType := ftConstMethod;
-  SortingData.LessFunctionData.ConstMethod:= ALessFunction;
+  SortingData.LessFunction := ALessFunction;
   Create(AIterator, SortingData);
 end;
 

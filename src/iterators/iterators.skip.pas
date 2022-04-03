@@ -21,31 +21,17 @@ type
     function MoveNext: Boolean; override;
   end;
 
+  { TSkipWhileIterator }
+
   generic TSkipWhileIterator<T> = class(specialize TIteratorIterator<T, T>)
   public type
-    TWhileConditionFunction = specialize TUnaryFunction<Boolean, T>;
-    TWhileConditionMethod = specialize TUnaryMethodFunction<Boolean, T>;
-    TConstWhileConditionFunction = specialize TConstUnaryFunction<Boolean, T>;
-    TConstWhileConditionMethod = specialize TConstUnaryMethodFunction<Boolean, T>;
-  private type
-    TWhileConditionFunctionData = record
-      case FuncType: TFunctionType of
-        ftFunction: (Func: TWhileConditionFunction);
-        ftMethod: (Method: TWhileConditionMethod);
-        ftConstFunction: (ConstFunc: TConstWhileConditionFunction);
-        ftConstMethod: (ConstMethod: TConstWhileConditionMethod);
-    end;
+    TWhileConditionFunction = specialize TAnyUnaryFunction<Boolean, T>;
   private
-    FFunction: TWhileConditionFunctionData;
+    FFunction: TWhileConditionFunction;
     FirstMove: Boolean;
 
-    function CheckCurrent: Boolean; inline;
   public
-    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TWhileConditionFunctionData); overload;
-    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TWhileConditionFunction); overload;
-    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TWhileConditionMethod); overload;
-    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TConstWhileConditionFunction); overload;
-    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TConstWhileConditionMethod); overload;
+    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TWhileConditionFunction);
 
     function GetCurrent: T; override;
     function MoveNext: Boolean; override;
@@ -81,65 +67,12 @@ end;
 
 { TSkipWhileIterator }
 
-function TSkipWhileIterator.CheckCurrent: Boolean;
-var
-  Curr: T;
-begin
-  Curr := IteratorCurrent;
-  case FFunction.FuncType of
-    ftFunction: Result := FFunction.Func(Curr);
-    ftMethod: Result := FFunction.Method(Curr);
-    ftConstFunction: Result := FFunction.ConstFunc(Curr);
-    ftConstMethod: Result := FFunction.ConstMethod(Curr);
-  end;
-end;
-
 constructor TSkipWhileIterator.Create(AEnumerator: IIteratorType;
-  AWhileConditionFunction: TWhileConditionFunctionData);
+  AWhileConditionFunction: TWhileConditionFunction);
 begin
   inherited Create(AEnumerator);
   FFunction := AWhileConditionFunction;
   FirstMove := True;
-end;
-
-constructor TSkipWhileIterator.Create(AEnumerator: IIteratorType;
-  AWhileConditionFunction: TWhileConditionFunction);
-var
-  WhileConditionFunction: TWhileConditionFunctionData;
-begin
-  WhileConditionFunction.FuncType := ftFunction;
-  WhileConditionFunction.Func := AWhileConditionFunction;
-  Create(AEnumerator, WhileConditionFunction);
-end;
-
-constructor TSkipWhileIterator.Create(AEnumerator: IIteratorType;
-  AWhileConditionFunction: TWhileConditionMethod);
-var
-  WhileConditionFunction: TWhileConditionFunctionData;
-begin
-  WhileConditionFunction.FuncType := ftMethod;
-  WhileConditionFunction.Method := AWhileConditionFunction;
-  Create(AEnumerator, WhileConditionFunction);
-end;
-
-constructor TSkipWhileIterator.Create(AEnumerator: IIteratorType;
-  AWhileConditionFunction: TConstWhileConditionFunction);
-var
-  WhileConditionFunction: TWhileConditionFunctionData;
-begin
-  WhileConditionFunction.FuncType := ftConstFunction;
-  WhileConditionFunction.ConstFunc := AWhileConditionFunction;
-  Create(AEnumerator, WhileConditionFunction);
-end;
-
-constructor TSkipWhileIterator.Create(AEnumerator: IIteratorType;
-  AWhileConditionFunction: TConstWhileConditionMethod);
-var
-  WhileConditionFunction: TWhileConditionFunctionData;
-begin
-  WhileConditionFunction.FuncType := ftConstMethod;
-  WhileConditionFunction.ConstMethod := AWhileConditionFunction;
-  Create(AEnumerator, WhileConditionFunction);
 end;
 
 function TSkipWhileIterator.GetCurrent: T;
@@ -152,7 +85,7 @@ begin
   Result := IteratorMoveNext;
   if FirstMove then
   begin
-    while Result and CheckCurrent do
+    while Result and FFunction.apply(IteratorCurrent) do
       Result := IteratorMoveNext;
     FirstMove := False;
   end;

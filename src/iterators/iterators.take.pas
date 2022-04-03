@@ -23,29 +23,14 @@ type
 
   generic TTakeWhileIterator<T> = class(specialize TIteratorIterator<T, T>)
   public type
-    TWhileConditionFunction = specialize TUnaryFunction<Boolean, T>;
-    TWhileConditionMethod = specialize TUnaryMethodFunction<Boolean, T>;
-    TConstWhileConditionFunction = specialize TConstUnaryFunction<Boolean, T>;
-    TConstWhileConditionMethod = specialize TConstUnaryMethodFunction<Boolean, T>;
-  private type
-    TWhileConditionFunctionData = record
-      case FuncType: TFunctionType of
-        ftFunction: (Func: TWhileConditionFunction);
-        ftMethod: (Method: TWhileConditionMethod);
-        ftConstFunction: (ConstFunc: TConstWhileConditionFunction);
-        ftConstMethod: (ConstMethod: TConstWhileConditionMethod);
-    end;
+    TWhileConditionFunction = specialize TAnyUnaryFunction<Boolean, T>;
   private
-    FFunction: TWhileConditionFunctionData;
+    FFunction: TWhileConditionFunction;
     FCurrent: T;
 
     function UpdateCurrentAndCheck: Boolean; inline;
   public
-    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TWhileConditionFunctionData); overload;
-    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TWhileConditionFunction); overload;
-    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TWhileConditionMethod); overload;
-    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TConstWhileConditionFunction); overload;
-    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TConstWhileConditionMethod); overload;
+    constructor Create(AEnumerator: IIteratorType; AWhileConditionFunction: TWhileConditionFunction);
 
     function GetCurrent: T; override;
     function MoveNext: Boolean; override;
@@ -82,59 +67,14 @@ end;
 function TTakeWhileIterator.UpdateCurrentAndCheck: Boolean;
 begin
   FCurrent := IteratorCurrent;
-case FFunction.FuncType of
-  ftFunction: Result := FFunction.Func(FCurrent);
-  ftMethod: Result := FFunction.Method(FCurrent);
-  ftConstFunction: Result := FFunction.ConstFunc(FCurrent);
-  ftConstMethod: Result := FFunction.ConstMethod(FCurrent);
-end;
-end;
-
-constructor TTakeWhileIterator.Create(AEnumerator: IIteratorType;
-  AWhileConditionFunction: TWhileConditionFunctionData);
-begin
-  inherited Create(AEnumerator);
-  FFunction := AWhileConditionFunction;
+  Result := FFunction.apply(FCurrent);
 end;
 
 constructor TTakeWhileIterator.Create(AEnumerator: IIteratorType;
   AWhileConditionFunction: TWhileConditionFunction);
-var
-  WhileConditionFunction: TWhileConditionFunctionData;
 begin
-  WhileConditionFunction.FuncType := ftFunction;
-  WhileConditionFunction.Func := AWhileConditionFunction;
-  Create(AEnumerator, WhileConditionFunction);
-end;
-
-constructor TTakeWhileIterator.Create(AEnumerator: IIteratorType;
-  AWhileConditionFunction: TWhileConditionMethod);
-var
-  WhileConditionFunction: TWhileConditionFunctionData;
-begin
-  WhileConditionFunction.FuncType := ftMethod;
-  WhileConditionFunction.Method := AWhileConditionFunction;
-  Create(AEnumerator, WhileConditionFunction);
-end;
-
-constructor TTakeWhileIterator.Create(AEnumerator: IIteratorType;
-  AWhileConditionFunction: TConstWhileConditionFunction);
-var
-  WhileConditionFunction: TWhileConditionFunctionData;
-begin
-  WhileConditionFunction.FuncType := ftConstFunction;
-  WhileConditionFunction.ConstFunc := AWhileConditionFunction;
-  Create(AEnumerator, WhileConditionFunction);
-end;
-
-constructor TTakeWhileIterator.Create(AEnumerator: IIteratorType;
-  AWhileConditionFunction: TConstWhileConditionMethod);
-var
-  WhileConditionFunction: TWhileConditionFunctionData;
-begin
-  WhileConditionFunction.FuncType := ftConstMethod;
-  WhileConditionFunction.ConstMethod := AWhileConditionFunction;
-  Create(AEnumerator, WhileConditionFunction);
+  inherited Create(AEnumerator);
+  FFunction := AWhileConditionFunction;
 end;
 
 function TTakeWhileIterator.GetCurrent: T;

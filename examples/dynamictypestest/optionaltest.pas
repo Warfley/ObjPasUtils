@@ -1,9 +1,10 @@
 program optionaltest;
 
 {$mode delphi}{$H+}
+{$ModeSwitch NestedProcvars}
 
 uses
-  SysUtils, DynamicTypes, NoneType;
+  SysUtils, DynamicTypes, NoneType, FuncTypes;
 
 procedure TestOptionalInitialization;
 var
@@ -71,17 +72,23 @@ procedure TestOptionalMap;
 var
   optInt: TOptional<Integer>;
   optStr: TOptional<String>;
+
+// Implicit conversion doesn't work with overloaded functions
+function Int2Hex(i: Integer): String;
+begin
+  Result := IntToHex(i);
+end;
 begin
   Write('Testing map Int->Str on empty value: ');
   optInt := None;
-  optStr := Map<Integer, String>(optInt, IntToHex);
+  optStr := Map<Integer, String>(optInt, Int2Hex);
   if OptStr then
     WriteLn('Opt str is: ', OptStr.Value)
   else
     WriteLn('OptStr has no Value');
   Write('Testing map Int->Str on 42: ');
   optInt := 42;
-  optStr := Map<Integer, String>(optInt, IntToHex);
+  optStr := Map<Integer, String>(optInt, Int2Hex);
   if OptStr then
     WriteLn('Opt str is: ', OptStr.Value)
   else
