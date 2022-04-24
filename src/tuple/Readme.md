@@ -10,6 +10,8 @@ begin
   p := Pair<String, Integer>('Hello World', 42);
   // The same as
   p := Tuple<String, Integer>('Hello World', 42);
+  // Or using implicit specialization
+  p := Pair('Hello World', 42);
 ```
 The values can be accessed via `First`, `Second`, `Third`, `Fourth` and `Fifth`:
 ```pascal

@@ -116,15 +116,15 @@ Currently this is not supported by this library, but is a use case that will be 
 
 ## Notes
 ### Implicit Specialization
-A new feature currently in development is implicit specialization for generic functions. This would allow leaving out the generic typing for the functions.
-This would massively improve the readability of these functions presented here:
+A new feature of FPC is implicit specialization for generic functions. This allows leaving out the generic typing for the functions.
+An example can be found in `examples/iterator_test/iteratortest_implicit.lpr`.
+
+This feature can be enabled with the modeswitch `{$ModeSwitch ImplicitFunctionSpecialization}` and allows leaving out the specialization syntax:
 ```pascal
 HexStr := Reduce<String>(Map<Byte, String>(Iterate<Byte>(arr), ByteToHex), ConcatStr);
-// would become
+// becomes
 HexStr := Reduce(Map(Iterate(arr), ByteToHex), ConcatStr);
 ```
-But until then, it is still required to always add the appropriate types to the generic specialization.
-
 To ease readability, I would also suggest using `{$Mode Delphi}` rather than objFPC, as it does not require the `specialize` keyword:
 ```pascal
 // Mode Delphi:

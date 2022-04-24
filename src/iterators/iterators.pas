@@ -1,6 +1,7 @@
 unit iterators;
 
 {$mode objfpc}{$H+}
+{$ModeSwitch nestedprocvars}
 
 interface
 
@@ -23,24 +24,64 @@ function Iterate(const AList: Classes.TList): specialize IIterator<Pointer>; ove
 
 // Map functions
 generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
-  AFunction: specialize TAnyUnaryFunction<TTo, TFrom>): specialize IIterator<TTo>; overload; inline;
+  AFunction: specialize TUnaryFunction<TTo, TFrom>): specialize IIterator<TTo>; overload; inline;
+generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
+  AFunction: specialize TConstUnaryFunction<TTo, TFrom>): specialize IIterator<TTo>; overload; inline;
+generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
+  AFunction: specialize TUnaryFunctionMethod<TTo, TFrom>): specialize IIterator<TTo>; overload; inline;
+generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
+  AFunction: specialize TConstUnaryFunctionMethod<TTo, TFrom>): specialize IIterator<TTo>; overload; inline;
+generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
+  AFunction: specialize TUnaryFunctionNested<TTo, TFrom>): specialize IIterator<TTo>; overload; inline;
+generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
+  AFunction: specialize TConstUnaryFunctionNested<TTo, TFrom>): specialize IIterator<TTo>; overload; inline;
 
 // Filter functions
 generic function Filter<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyUnaryFunction<Boolean, T>): specialize IIterator<T>; overload; inline;
+  AFunction: specialize TUnaryFunction<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function Filter<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunction<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function Filter<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function Filter<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function Filter<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionNested<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function Filter<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionNested<Boolean, T>): specialize IIterator<T>; overload; inline;
 
 
 // Take and Takewhile
 generic function Take<T>(AIterator: specialize IIterator<T>; ACount: SizeInt):
   specialize IIterator<T>; overload;
 generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyUnaryFunction<Boolean, T>): specialize IIterator<T>; overload; inline;
+  AFunction: specialize TUnaryFunction<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunction<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionNested<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionNested<Boolean, T>): specialize IIterator<T>; overload; inline;
 
 // Skip and SkipWhile
 generic function Skip<T>(AIterator: specialize IIterator<T>; ACount: SizeInt):
   specialize IIterator<T>; overload;
 generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyUnaryFunction<Boolean, T>): specialize IIterator<T>; overload; inline;
+  AFunction: specialize TUnaryFunction<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunction<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionNested<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionNested<Boolean, T>): specialize IIterator<T>; overload; inline;
 
 // Typing functions
 generic function Cast<TFrom, TTo>(AIterator: specialize IIterator<TFrom>): specialize IIterator<TTo>; overload; inline;
@@ -54,13 +95,56 @@ function ClassTypes(AIterator: specialize IIterator<TObject>): specialize IItera
 
 // Fold/Reduce
 generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
-  AFunction: specialize TAnyBinaryFunction<TResult, TResult, TData>; const InitialData: TResult): TResult; inline;
+  AFunction: specialize TBinaryFunction<TResult, TResult, TData>; const InitialData: TResult): TResult; overload; inline;
+generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunction<TResult, TResult, TData>; const InitialData: TResult): TResult; overload; inline;
+generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TBinaryFunctionMethod<TResult, TResult, TData>; const InitialData: TResult): TResult; overload; inline;
+generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunctionMethod<TResult, TResult, TData>; const InitialData: TResult): TResult; overload; inline;
+generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TBinaryFunctionNested<TResult, TResult, TData>; const InitialData: TResult): TResult; overload; inline;
+generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunctionNested<TResult, TResult, TData>; const InitialData: TResult): TResult; overload; inline;
+
 generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
-  AFunction: specialize TAnyBinaryFunction<TResult, TData, TResult>; const InitialData: TResult): TResult; inline;
+  AFunction: specialize TBinaryFunction<TResult, TData, TResult>; const InitialData: TResult): TResult; overload; inline;
+generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunction<TResult, TData, TResult>; const InitialData: TResult): TResult; overload; inline;
+generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TBinaryFunctionMethod<TResult, TData, TResult>; const InitialData: TResult): TResult; overload; inline;
+generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunctionMethod<TResult, TData, TResult>; const InitialData: TResult): TResult; overload; inline;
+generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TBinaryFunctionNested<TResult, TData, TResult>; const InitialData: TResult): TResult; overload; inline;
+generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunctionNested<TResult, TData, TResult>; const InitialData: TResult): TResult; overload; inline;
+
 generic function Reduce<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyBinaryFunction<T, T, T>; const InitialData: T): T; overload; inline;
+  AFunction: specialize TBinaryFunction<T, T, T>; const InitialData: T): T; overload; inline;
 generic function Reduce<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyBinaryFunction<T, T, T>): T; overload; inline;
+  AFunction: specialize TConstBinaryFunction<T, T, T>; const InitialData: T): T; overload; inline;
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionMethod<T, T, T>; const InitialData: T): T; overload; inline;
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionMethod<T, T, T>; const InitialData: T): T; overload; inline;
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionNested<T, T, T>; const InitialData: T): T; overload; inline;
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionNested<T, T, T>; const InitialData: T): T; overload; inline;
+
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunction<T, T, T>): T; overload; inline;
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunction<T, T, T>): T; overload; inline;
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionMethod<T, T, T>): T; overload; inline;
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionMethod<T, T, T>): T; overload; inline;
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionNested<T, T, T>): T; overload; inline;
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionNested<T, T, T>): T; overload; inline;
 
 // Collect
 generic function CollectArray<T>(AIterator: specialize IIterator<T>; GeometricGrowth: Boolean = True): specialize TArray<T>; inline;
@@ -77,19 +161,39 @@ generic function Step<T>(AIterator: specialize IIterator<T>; StepSize: SizeInt):
 generic function Reverse<T>(AIterator: specialize IIterator<T>): specialize IIterator<T>; inline;
 // Sorting: Compare function
 generic function Sorted<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyBinaryFunction<Integer, T, T>): specialize IIterator<T>; overload; inline;
+  AFunction: specialize TBinaryFunction<Integer, T, T>): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunction<Integer, T, T>): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionMethod<Integer, T, T>): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionMethod<Integer, T, T>): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionNested<Integer, T, T>): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionNested<Integer, T, T>): specialize IIterator<T>; overload; inline;
 // Sorting: Less function
 generic function Sorted<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyBinaryFunction<Boolean, T, T>): specialize IIterator<T>; overload; inline;
+  AFunction: specialize TBinaryFunction<Boolean, T, T>): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunction<Boolean, T, T>): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionMethod<Boolean, T, T>): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionMethod<Boolean, T, T>): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionNested<Boolean, T, T>): specialize IIterator<T>; overload; inline;
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionNested<Boolean, T, T>): specialize IIterator<T>; overload; inline;
 
 // Get Next element from iterator
 generic function Next<T>(AIterator: specialize IIterator<T>; out AValue: T): Boolean; overload; inline;
 generic function Next<T>(AIterator: specialize IIterator<T>): T; overload; inline;
-generic function Next<T>(AIterator: specialize IIterator<T>): specialize TOptional<T>; overload; inline;
+generic function NextOpt<T>(AIterator: specialize IIterator<T>): specialize TOptional<T>; overload; inline;
 // Get the Last element from iterator
 generic function Last<T>(AIterator: specialize IIterator<T>; out AValue: T): Boolean; overload; inline;
 generic function Last<T>(AIterator: specialize IIterator<T>): T; overload; inline;
-generic function Last<T>(AIterator: specialize IIterator<T>): specialize TOptional<T>; overload; inline;
+generic function LastOpt<T>(AIterator: specialize IIterator<T>): specialize TOptional<T>; overload; inline;
 implementation
 
 { Iterate Functions }
@@ -120,9 +224,38 @@ begin
 end;
 
 { Map Functions }
+generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
+  AFunction: specialize TUnaryFunction<TTo, TFrom>): specialize IIterator<TTo>;
+begin
+  Result := specialize TMapIterator<TFrom, TTo>.Create(AIterator, AFunction);
+end;
 
 generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
-  AFunction: specialize TAnyUnaryFunction<TTo, TFrom>): specialize IIterator<TTo>;
+  AFunction: specialize TConstUnaryFunction<TTo, TFrom>): specialize IIterator<TTo>;
+begin
+  Result := specialize TMapIterator<TFrom, TTo>.Create(AIterator, AFunction);
+end;
+
+generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
+  AFunction: specialize TUnaryFunctionMethod<TTo, TFrom>): specialize IIterator<TTo>;
+begin
+  Result := specialize TMapIterator<TFrom, TTo>.Create(AIterator, AFunction);
+end;
+
+generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
+  AFunction: specialize TConstUnaryFunctionMethod<TTo, TFrom>): specialize IIterator<TTo>;
+begin
+  Result := specialize TMapIterator<TFrom, TTo>.Create(AIterator, AFunction);
+end;
+
+generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
+  AFunction: specialize TUnaryFunctionNested<TTo, TFrom>): specialize IIterator<TTo>;
+begin
+  Result := specialize TMapIterator<TFrom, TTo>.Create(AIterator, AFunction);
+end;
+
+generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
+  AFunction: specialize TConstUnaryFunctionNested<TTo, TFrom>): specialize IIterator<TTo>;
 begin
   Result := specialize TMapIterator<TFrom, TTo>.Create(AIterator, AFunction);
 end;
@@ -130,7 +263,37 @@ end;
 { Filter Functions }
 
 generic function Filter<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyUnaryFunction<Boolean, T>): specialize IIterator<T>;
+  AFunction: specialize TUnaryFunction<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TFilterIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Filter<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunction<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TFilterIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Filter<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TFilterIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Filter<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TFilterIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Filter<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionNested<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TFilterIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Filter<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionNested<Boolean, T>): specialize IIterator<T>;
 begin
   Result := specialize TFilterIterator<T>.Create(AIterator, AFunction);
 end;
@@ -144,7 +307,37 @@ begin
 end;
 
 generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyUnaryFunction<Boolean, T>): specialize IIterator<T>;
+  AFunction: specialize TUnaryFunction<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TTakeWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunction<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TTakeWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TTakeWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TTakeWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionNested<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TTakeWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionNested<Boolean, T>): specialize IIterator<T>;
 begin
   Result := specialize TTakeWhileIterator<T>.Create(AIterator, AFunction);
 end;
@@ -158,7 +351,37 @@ begin
 end;
 
 generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyUnaryFunction<Boolean, T>): specialize IIterator<T>;
+  AFunction: specialize TUnaryFunction<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSkipWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunction<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSkipWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSkipWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionMethod<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSkipWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TUnaryFunctionNested<Boolean, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSkipWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstUnaryFunctionNested<Boolean, T>): specialize IIterator<T>;
 begin
   Result := specialize TSkipWhileIterator<T>.Create(AIterator, AFunction);
 end;
@@ -206,26 +429,155 @@ begin
 end;
 
 { Fold/Reduce }
+
+// FOLDL
+
 generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
-  AFunction: specialize TAnyBinaryFunction<TResult, TResult, TData>; const InitialData: TResult): TResult;
+  AFunction: specialize TBinaryFunction<TResult, TResult, TData>; const InitialData: TResult): TResult;
 begin
   Result := specialize FoldLCollect<TResult, TData>(AIterator, AFunction, InitialData);
 end;
 
+generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunction<TResult, TResult, TData>; const InitialData: TResult): TResult;
+begin
+  Result := specialize FoldLCollect<TResult, TData>(AIterator, AFunction, InitialData);
+end;
+
+generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TBinaryFunctionMethod<TResult, TResult, TData>; const InitialData: TResult): TResult;
+begin
+  Result := specialize FoldLCollect<TResult, TData>(AIterator, AFunction, InitialData);
+end;
+
+generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunctionMethod<TResult, TResult, TData>; const InitialData: TResult): TResult;
+begin
+  Result := specialize FoldLCollect<TResult, TData>(AIterator, AFunction, InitialData);
+end;
+
+generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TBinaryFunctionNested<TResult, TResult, TData>; const InitialData: TResult): TResult;
+begin
+  Result := specialize FoldLCollect<TResult, TData>(AIterator, AFunction, InitialData);
+end;
+
+generic function FoldL<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunctionNested<TResult, TResult, TData>; const InitialData: TResult): TResult;
+begin
+  Result := specialize FoldLCollect<TResult, TData>(AIterator, AFunction, InitialData);
+end;
+
+// FoldR
+
 generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
-  AFunction: specialize TAnyBinaryFunction<TResult, TData, TResult>; const InitialData: TResult): TResult;
+  AFunction: specialize TBinaryFunction<TResult, TData, TResult>; const InitialData: TResult): TResult;
 begin
   Result := specialize FoldRCollect<TResult, TData>(AIterator, AFunction, InitialData);
 end;
 
+generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunction<TResult, TData, TResult>; const InitialData: TResult): TResult;
+begin
+  Result := specialize FoldRCollect<TResult, TData>(AIterator, AFunction, InitialData);
+end;
+
+generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TBinaryFunctionMethod<TResult, TData, TResult>; const InitialData: TResult): TResult;
+begin
+  Result := specialize FoldRCollect<TResult, TData>(AIterator, AFunction, InitialData);
+end;
+
+generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunctionMethod<TResult, TData, TResult>; const InitialData: TResult): TResult;
+begin
+  Result := specialize FoldRCollect<TResult, TData>(AIterator, AFunction, InitialData);
+end;
+
+generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TBinaryFunctionNested<TResult, TData, TResult>; const InitialData: TResult): TResult;
+begin
+  Result := specialize FoldRCollect<TResult, TData>(AIterator, AFunction, InitialData);
+end;
+
+generic function FoldR<TResult, TData>(AIterator: specialize IIterator<TData>;
+  AFunction: specialize TConstBinaryFunctionNested<TResult, TData, TResult>; const InitialData: TResult): TResult;
+begin
+  Result := specialize FoldRCollect<TResult, TData>(AIterator, AFunction, InitialData);
+end;
+
+// Reduce InitialData
+
 generic function Reduce<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyBinaryFunction<T, T, T>; const InitialData: T): T;
+  AFunction: specialize TBinaryFunction<T, T, T>; const InitialData: T): T;
 begin
   Result := specialize FoldLCollect<T, T>(AIterator, AFunction, InitialData);
 end;
 
 generic function Reduce<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyBinaryFunction<T, T, T>): T;
+  AFunction: specialize TConstBinaryFunction<T, T, T>; const InitialData: T): T;
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, AFunction, InitialData);
+end;
+
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionMethod<T, T, T>; const InitialData: T): T;
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, AFunction, InitialData);
+end;
+
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionMethod<T, T, T>; const InitialData: T): T;
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, AFunction, InitialData);
+end;
+
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionNested<T, T, T>; const InitialData: T): T;
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, AFunction, InitialData);
+end;
+
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionNested<T, T, T>; const InitialData: T): T;
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, AFunction, InitialData);
+end;
+
+// Reduce Default
+
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunction<T, T, T>): T;
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, AFunction, Default(T));
+end;
+
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunction<T, T, T>): T;
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, AFunction, Default(T));
+end;
+
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionMethod<T, T, T>): T;
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, AFunction, Default(T));
+end;
+
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionMethod<T, T, T>): T;
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, AFunction, Default(T));
+end;
+
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionNested<T, T, T>): T;
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, AFunction, Default(T));
+end;
+
+generic function Reduce<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionNested<T, T, T>): T;
 begin
   Result := specialize FoldLCollect<T, T>(AIterator, AFunction, Default(T));
 end;
@@ -270,14 +622,75 @@ begin
 end;
 
 generic function Sorted<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyBinaryFunction<Integer, T, T>): specialize IIterator<T>;
+  AFunction: specialize TBinaryFunction<Integer, T, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunction<Integer, T, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionMethod<Integer, T, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionMethod<Integer, T, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionNested<Integer, T, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionNested<Integer, T, T>): specialize IIterator<T>;
 begin
   Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
 end;
 
 // Sorting: Less function
+
 generic function Sorted<T>(AIterator: specialize IIterator<T>;
-  AFunction: specialize TAnyBinaryFunction<Boolean, T, T>): specialize IIterator<T>;
+  AFunction: specialize TBinaryFunction<Boolean, T, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunction<Boolean, T, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionMethod<Boolean, T, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionMethod<Boolean, T, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TBinaryFunctionNested<Boolean, T, T>): specialize IIterator<T>;
+begin
+  Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function Sorted<T>(AIterator: specialize IIterator<T>;
+  AFunction: specialize TConstBinaryFunctionNested<Boolean, T, T>): specialize IIterator<T>;
 begin
   Result := specialize TSortingIterator<T>.Create(AIterator, AFunction);
 end;
@@ -297,7 +710,7 @@ begin
     raise EEndOfIterator.Create('Iterator has no next element');
 end;
 
-generic function Next<T>(AIterator: specialize IIterator<T>): specialize TOptional<T>;
+generic function NextOpt<T>(AIterator: specialize IIterator<T>): specialize TOptional<T>;
 begin
   Result := None;
   if AIterator.MoveNext then
@@ -318,7 +731,7 @@ begin
     raise EEndOfIterator.Create('Iterator has no next element');
 end;
 
-generic function Last<T>(AIterator: specialize IIterator<T>): specialize TOptional<T>;
+generic function LastOpt<T>(AIterator: specialize IIterator<T>): specialize TOptional<T>;
 begin
   Result := None;
   While AIterator.MoveNext do
