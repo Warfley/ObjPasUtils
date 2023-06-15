@@ -8,13 +8,14 @@ interface
 uses
   Classes, SysUtils, functypes, iterators.base, iterators.map, iterators.filter,
   iterators.take, iterators.skip, iterators.typing, iterators.ordering, iterators.helper,
-  iterators.collector, Generics.Collections, TupleTypes, NoneType, DynamicTypes;
+  iterators.collector, iterators.strings, Generics.Collections, TupleTypes, NoneType, DynamicTypes;
 
 type
   EEndOfIterator = class(Exception);
 
 // Create Iterators from base type
 generic function Iterate<T>(const AArray: specialize TArray<T>): specialize IIterator<T>; overload; inline;
+generic function Iterate(const AString: String): specialize IIterator<Char>; overload; inline;
 generic function Iterate<T>(const AEnumarble: specialize IEnumerable<T>): specialize IIterator<T>; overload; inline;
 // Generics.collections support
 generic function Iterate<T>(const AEnumarble: specialize TEnumerable<T>): specialize IIterator<T>; overload; inline;
@@ -22,6 +23,10 @@ generic function Iterate<T, U>(const ADictionairy: specialize TDictionary<T, U>)
 // Classic pascal containers
 function Iterate(const AStrings: TStrings): specialize IIterator<String>; overload; inline;
 function Iterate(const AList: Classes.TList): specialize IIterator<Pointer>; overload; inline;
+// String interators
+function Split(const AString: String; const ADelimiter: String): specialize IIterator<String>; inline;
+function IterateUTF8(const AString: String): specialize IIterator<String>; inline; overload;
+function IterateUTF8(const AIterator: specialize IIterator<Char>): specialize IIterator<String>; inline; overload;
 
 // Map functions
 generic function Map<TFrom, TTo>(AIterator: specialize IIterator<TFrom>;
@@ -67,6 +72,11 @@ generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
   AFunction: specialize TUnaryFunctionNested<Boolean, T>): specialize IIterator<T>; overload; inline;
 generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
   AFunction: specialize TConstUnaryFunctionNested<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function TakeUntil<T>(AIterator: specialize IIterator<T>;
+  const ASequence: specialize TArray<T>; AIncludeSequence: Boolean = False):
+  specialize IIterator<T>; overload; inline;   
+generic function TakeUntil<T>(AIterator: specialize IIterator<T>;
+  const ASequence: array of T; AIncludeSequence: Boolean = False): specialize IIterator<T>; overload; inline;
 
 // Skip and SkipWhile
 generic function Skip<T>(AIterator: specialize IIterator<T>; ACount: SizeInt):
@@ -195,6 +205,7 @@ generic function NextOpt<T>(AIterator: specialize IIterator<T>): specialize TOpt
 generic function Last<T>(AIterator: specialize IIterator<T>; out AValue: T): Boolean; overload; inline;
 generic function Last<T>(AIterator: specialize IIterator<T>): T; overload; inline;
 generic function LastOpt<T>(AIterator: specialize IIterator<T>): specialize TOptional<T>; overload; inline;
+
 implementation
 
 { Iterate Functions }
@@ -202,6 +213,11 @@ implementation
 generic function Iterate<T>(const AArray: specialize TArray<T>): specialize IIterator<T>;
 begin
   Result := specialize TArrayIterator<T>.Create(AArray);
+end;
+
+generic function Iterate(const AString: String): specialize IIterator<Char>;
+begin
+  Result := TCharIterator.Create(AString);
 end;
 
 generic function Iterate<T>(const AEnumarble: specialize IEnumerable<T>): specialize IIterator<T>;
@@ -227,6 +243,23 @@ end;
 function Iterate(const AList: Classes.TList): specialize IIterator<Pointer>;
 begin
   Result := specialize TClassEnumeratorIterator<Pointer, Classes.TListEnumerator>.Create(AList.GetEnumerator);
+end;
+
+{ Other Iterators }
+
+function Split(const AString: String; const ADelimiter: String): specialize IIterator<String>;
+begin
+  Result := TStringSplitIterator.Create(AString, ADelimiter);
+end;    
+
+function IterateUTF8(const AString: String): specialize IIterator<String>;
+begin
+  Result := TUTF8Iterator.Create(AString);
+end; 
+
+function IterateUTF8(const AIterator: specialize IIterator<Char>): specialize IIterator<String>;
+begin
+  Result := TUTF8AggregateIterator.Create(AIterator);
 end;
 
 { Map Functions }
@@ -346,6 +379,19 @@ generic function TakeWhile<T>(AIterator: specialize IIterator<T>;
   AFunction: specialize TConstUnaryFunctionNested<Boolean, T>): specialize IIterator<T>;
 begin
   Result := specialize TTakeWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function TakeUntil<T>(AIterator: specialize IIterator<T>;
+  const ASequence: specialize TArray<T>; AIncludeSequence: Boolean = False):
+  specialize IIterator<T>;
+begin
+  Result := specialize TTakeUntilIterator<T>.Create(AIterator, ASequence, AIncludeSequence);
+end;
+
+generic function TakeUntil<T>(AIterator: specialize IIterator<T>;
+  const ASequence: array of T; AIncludeSequence: Boolean = False): specialize IIterator<T>;
+begin
+  Result := specialize TTakeUntilIterator<T>.Create(AIterator, ASequence, AIncludeSequence);
 end;
 
 { Skip and SkipWhile Functions }

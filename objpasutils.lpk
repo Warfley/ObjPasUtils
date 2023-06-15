@@ -73,6 +73,10 @@
         <Filename Value="src\iterators\iterators.ordering.pas"/>
         <UnitName Value="iterators.ordering"/>
       </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.strings.pas"/>
+        <UnitName Value="iterators.strings"/>
+      </Item>
     </Files>
     <RequiredPkgs>
       <Item>

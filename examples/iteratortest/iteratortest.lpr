@@ -2,9 +2,14 @@ program iteratortest;
 
 {$mode Delphi}{$H+}
 {$ModeSwitch nestedprocvars}
+{$Codepage UTF8}
 
 uses
-  Classes, Contnrs, SysUtils, iterators, iterators.base, Generics.Collections, TupleTypes;
+  Classes, Contnrs, SysUtils, iterators, iterators.base, Generics.Collections, TupleTypes
+
+  {$IfDef WINDOWS} // Utf8 support
+  , windows
+  {$EndIf};
 
 var
   Data: Array of Integer = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -16,6 +21,18 @@ begin
   Write('Testing Iterate over Array:');
   for i in Iterate<Integer>(Data) do
     Write(' ', i);
+  WriteLn;
+end;    
+
+procedure IterateCharsTest;
+const
+  TestString = 'Hello World';
+var
+  c: Char;
+begin
+  Write('Testing iterating chars of "' + TestString + '":');
+  for c in Iterate(TestString) do
+    Write(' ', c);
   WriteLn;
 end;
 
@@ -195,6 +212,42 @@ begin
   WriteLn;
 end;
 
+procedure TakeUntilTest;
+const
+  TestString = 'aacbaaabaabbaca';
+var
+  c: Char;
+begin
+  Write('Testing TakeUntil (excluding) aabb in "' + TestString + '":');
+  for c in TakeUntil<Char>(Iterate(TestString), ['a', 'a', 'b', 'b']) do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure TakeUntilWithSequenceTest;
+const
+  TestString = 'aacbaaabaabbaca';
+var
+  c: Char;
+begin
+  Write('Testing TakeUntil (including) aabb in "' + TestString + '":');
+  for c in TakeUntil<Char>(Iterate(TestString), ['a', 'a', 'b', 'b'], True) do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure TakeUntilNoOccurnaceTest;
+const
+  TestString = 'aabacdaa';
+var
+  c: Char;
+begin
+  Write('Testing TakeUntil abcd in "' + TestString + '":');
+  for c in TakeUntil<Char>(Iterate(TestString), ['a', 'b', 'c', 'd']) do
+    Write(' ', c);
+  WriteLn;
+end;
+
 function isPrime(ANumber: Integer): Boolean;
 var i: Integer;
 begin
@@ -365,8 +418,63 @@ begin
   WriteLn;
 end;
 
+procedure UTF8Test;
+const
+  TestString = '€$£';
+var
+  c: String;
 begin
-  IterateArrayTest;
+  Write('Testing iterating over "', TestString, '":');
+  for c in IterateUTF8(TestString) do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure UTF8FromIteratorTest;
+const
+  TestString = '€$£';
+var
+  c: String;
+begin
+  Write('Testing iterating over "', TestString, '" (iterator):');
+  for c in IterateUTF8(Iterate(TestString)) do
+    Write(' ', c); // Why won't you work on windows?
+  WriteLn;
+end;
+
+procedure SingleCharSplitTest;
+const
+  DelimitedText = 'Slash/Delimited/Text';
+var
+  str: String;
+begin
+  Write('Testing splitting "' + DelimitedText + '":');
+  for str in Split(DelimitedText, '/') do
+    Write(' "', str, '"');
+  WriteLn;
+end;
+
+procedure SequenceSplitTest;
+const
+  DelimitedText = 'aabaacbabba';
+  Delimiter = 'ab';
+var
+  str: String;
+begin
+  Write('Testing splitting "' + DelimitedText + '" on "' + Delimiter + '":');
+  for str in Split(DelimitedText, Delimiter) do
+    Write(' "', str, '"');
+  WriteLn;
+end;
+
+begin
+  {$IfDef WINDOWS}
+  SetConsoleOutputCP(DefaultSystemCodePage);
+  {$EndIf}
+  SetTextCodePage(Output, DefaultSystemCodePage);
+
+  IterateArrayTest; 
+  IterateCharsTest;
   IterateStringListTest;
   IterateListTest;
   IterateGenericListTest;
@@ -379,6 +487,9 @@ begin
   MapTest;
   TakeTest;
   TakeWhileTest;
+  TakeUntilTest;
+  TakeUntilWithSequenceTest;
+  TakeUntilNoOccurnaceTest;
   SkipTest;
   SkipWhileTest;
   ReduceTest;
@@ -387,6 +498,10 @@ begin
   ClassCastIteratorTest;
   FilterClassTest;
   MapClassTest;
+  UTF8Test;
+  UTF8FromIteratorTest;
+  SingleCharSplitTest;
+  SequenceSplitTest;
 
   ReadLn;
 end.
