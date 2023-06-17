@@ -87,8 +87,8 @@ var
 begin
   NewCurrent := IteratorCurrent;
   Result := NewCurrent is TFilterType;
-  // will only be touched if Result is True
-  FCurrent := TFilterType(NewCurrent);
+  if Result then // will only be touched if Result is True, but to make typecast checks happy
+    FCurrent := TFilterType(NewCurrent);
 end;
 
 function TFilterTypeIterator.GetCurrent: TFilterType;

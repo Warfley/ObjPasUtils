@@ -2,11 +2,13 @@ unit iterators.strings;
 
 {$mode objfpc}{$H+}
 {$ZeroBasedStrings On}
+{$Assertions on}
+{$RangeChecks Off} // Don't work with 0 based strings
 
 interface
 
 uses
-  SysUtils, iterators.base;
+  SysUtils, iterators.base, iterators.take, iterators.skip;
 
 type
   EInvalidUTF8Char = class(Exception);
@@ -66,7 +68,145 @@ type
     function MoveNext: Boolean; override;
   end;
 
+  { TCharSplitIterator }
+
+  TCharSplitIterator = class(specialize TIteratorIterator<String, Char>)
+  private
+    FCharIterator: IIteratorType;
+    FCurrent: String;
+    FDelimiter: String;
+  public
+    constructor Create(AIterator: IIteratorType; const ADelimiter: String);
+
+    function GetCurrent: String; override;
+    function MoveNext: Boolean; override;
+  end;
+
+  { TInBetweenIterator }
+
+  TInBetweenIterator = class(specialize TIteratorIterator<String, Char>)
+  private
+    FCharIterator: IIteratorType;
+    FCurrent: String;
+    FStartDelimiter: String;
+    FEndDelimiter: String;
+  public
+    constructor Create(AIterator: IIteratorType; const AStart: String; const AEnd: String);
+
+    function GetCurrent: String; override;
+    function MoveNext: Boolean; override;
+  end;
+
+function JoinCollectLinear(AIterator: specialize IIterator<String>; const Delimiter: String): String;
+function JoinCollectGeometric(AIterator: specialize IIterator<String>; const Delimiter: String): String;
+
+function CollectStringGeometric(AIterator: specialize IIterator<Char>): String; overload;
+function CollectStringLinear(AIterator: specialize IIterator<Char>): String; overload;
+function CollectStringGeometric(AIterator: specialize IIterator<String>): String; overload;
+function CollectStringLinear(AIterator: specialize IIterator<String>): String; overload;
 implementation
+
+function JoinCollectLinear(AIterator: specialize IIterator<String>;
+  const Delimiter: String): String;
+var
+  str: String;
+begin
+  if not AIterator.MoveNext then
+    Exit('');
+  Result := AIterator.Current;
+
+  for str in AIterator do
+    Result += Delimiter + str;
+end;
+
+function JoinCollectGeometric(AIterator: specialize IIterator<String>;
+  const Delimiter: String): String;
+var
+  CurrentPos: SizeInt;
+  str: String;
+begin
+  if not AIterator.MoveNext then
+    Exit('');
+  Result := AIterator.Current;
+  CurrentPos := Length(Result);
+                            
+  while AIterator.MoveNext do
+  begin
+    str := AIterator.Current;
+    while Length(Result) < CurrentPos + Length(Delimiter) + Length(str) do
+      SetLength(Result, Length(Result) * 2);
+    Move(Delimiter[0], Result[CurrentPos], Length(Delimiter) * SizeOf(Char));
+    CurrentPos += Length(Delimiter);  
+    Move(str[0], Result[CurrentPos], Length(str) * SizeOf(Char));
+    CurrentPos += Length(str);
+  end;
+  SetLength(Result, CurrentPos);
+end;
+
+function CollectStringGeometric(AIterator: specialize IIterator<Char>): String;
+var
+  CurrentPos, Len: SizeInt;
+begin
+  Result := '';
+  CurrentPos := 0;
+  Len := 2048; // Half a page
+  SetLength(Result, Len);
+
+  while AIterator.MoveNext do
+  begin
+    if CurrentPos >= Len then
+    begin
+      Len *= 2;
+      SetLength(Result, Len);
+    end;
+    Result[CurrentPos] := AIterator.Current;
+    Inc(CurrentPos);
+  end;
+  SetLength(Result, CurrentPos);
+end;
+
+function CollectStringLinear(AIterator: specialize IIterator<Char>): String;
+var
+  c: Char;
+begin
+  Result := '';
+  for c in AIterator do
+    Result += c;
+end;
+
+function CollectStringGeometric(AIterator: specialize IIterator<String>
+  ): String;
+var
+  CurrentPos: SizeInt;
+  str: String;
+begin
+  if not AIterator.MoveNext then
+    Exit('');
+  Result := AIterator.Current;
+  CurrentPos := Length(Result);
+
+  while AIterator.MoveNext do
+  begin
+    str := AIterator.Current;
+    while Length(Result) < CurrentPos + Length(str) do
+      SetLength(Result, Length(Result) * 2);
+    Move(str[0], Result[CurrentPos], Length(str) * SizeOf(Char));
+    CurrentPos += Length(str);
+  end;
+  SetLength(Result, CurrentPos);
+end;
+
+function CollectStringLinear(AIterator: specialize IIterator<String>): String;
+var
+  str: String;
+begin
+  if not AIterator.MoveNext then
+    Exit('');
+  Result := AIterator.Current;
+
+  for str in AIterator do
+    Result += str;
+end;
 
 function ValidFirstUTF8Char(FirstChar: Char): Boolean; inline;
 begin
@@ -90,7 +230,6 @@ begin
               + ord((ord(FirstChar) And %11100000) = %11100000)
               + ord((ord(FirstChar) And %11110000) = %11110000);
 end;
-
 
 { TCharIterator }
 
@@ -249,6 +388,76 @@ begin
     SetLength(FCurrent, Length(FCurrent) - PatternIndex);
   // Move Position
   FPosition += Len;
+end;
+
+{ TCharSplitIterator }
+
+constructor TCharSplitIterator.Create(AIterator: IIteratorType;
+  const ADelimiter: String);
+begin
+  inherited Create(AIterator);
+  FCharIterator := AIterator;
+  FDelimiter := ADelimiter;
+  FCurrent := '';
+end;
+
+function TCharSplitIterator.GetCurrent: String;
+begin
+  Result := FCurrent;
+end;
+
+function TCharSplitIterator.MoveNext: Boolean;
+var
+  Iter: specialize IIterator<Char>;
+begin
+  Result := False;
+  Iter := TTakeUntilStringIterator.Create(FCharIterator, FDelimiter, True);
+  FCurrent := CollectStringGeometric(Iter);
+  Result := Length(FCurrent) > 0;
+  if Result and FCurrent.EndsWith(FDelimiter) then
+    FCurrent := FCurrent.Remove(FCurrent.Length - FDelimiter.Length);
+end;
+
+{ TInBetweenIterator }
+
+constructor TInBetweenIterator.Create(AIterator: IIteratorType;
+  const AStart: String; const AEnd: String);
+begin
+  inherited Create(AIterator);
+  FCharIterator := AIterator;
+  FStartDelimiter := AStart;
+  FEndDelimiter := AEnd;
+  FCurrent := '';
+end;
+
+function TInBetweenIterator.GetCurrent: String;
+begin
+  Result := FCurrent;
+end;
+
+function TInBetweenIterator.MoveNext: Boolean;
+var
+  TakeIter, SkipIter: specialize IIterator<Char>;
+  i: SizeInt;
+begin
+  Result := False;
+  // First we skip until the start delimiter
+  SkipIter := TSkipUntilStringIterator.Create(FCharIterator, FStartDelimiter, False);
+  // Ensure we are not at the end
+  for i:=0 to Length(FStartDelimiter) - 1 do
+  begin
+    if not SkipIter.MoveNext then
+      Exit;
+    Assert(SkipIter.Current = FStartDelimiter[i]);
+  end;
+  // Similar to split above, but we don't except anything that is not terminated with EndDelimiter
+  SkipIter := TTakeUntilStringIterator.Create(FCharIterator, FEndDelimiter, True);
+  FCurrent := CollectStringGeometric(SkipIter);
+  if not FCurrent.IsEmpty and FCurrent.EndsWith(FEndDelimiter) then
+  begin
+    Result := True;
+    FCurrent := FCurrent.Remove(FCurrent.Length - FEndDelimiter.Length);
+  end;
 end;
 
 end.

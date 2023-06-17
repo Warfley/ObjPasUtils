@@ -219,7 +219,7 @@ var
   c: Char;
 begin
   Write('Testing TakeUntil (excluding) aabb in "' + TestString + '":');
-  for c in TakeUntil<Char>(Iterate(TestString), ['a', 'a', 'b', 'b']) do
+  for c in TakeUntil(Iterate(TestString), 'aabb') do
     Write(' ', c);
   WriteLn;
 end;
@@ -231,7 +231,7 @@ var
   c: Char;
 begin
   Write('Testing TakeUntil (including) aabb in "' + TestString + '":');
-  for c in TakeUntil<Char>(Iterate(TestString), ['a', 'a', 'b', 'b'], True) do
+  for c in TakeUntil(Iterate(TestString), 'aabb', True) do
     Write(' ', c);
   WriteLn;
 end;
@@ -243,7 +243,19 @@ var
   c: Char;
 begin
   Write('Testing TakeUntil abcd in "' + TestString + '":');
-  for c in TakeUntil<Char>(Iterate(TestString), ['a', 'b', 'c', 'd']) do
+  for c in TakeUntil(Iterate(TestString), 'abcd') do
+    Write(' ', c);
+  WriteLn;
+end; 
+
+procedure TakeUntilEmptySequence;
+const
+  TestString = 'Print None';
+var
+  c: Char;
+begin
+  Write('Testing TakeUntil [] in "' + TestString + '":');
+  for c in TakeUntil(Iterate(TestString), '') do
     Write(' ', c);
   WriteLn;
 end;
@@ -278,6 +290,96 @@ begin
   WriteLn;
 end;
 
+procedure SkipUntilTest;
+const
+  TestString = 'aacbaaabaabbaca';
+var
+  c: Char;
+begin
+  Write('Testing SkipUntil (excluding) aabb in "' + TestString + '":');
+  for c in SkipUntil<Char>(Iterate(TestString), 'aabb') do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure SkipUntilWithSequenceTest;
+const
+  TestString = 'aacbaaabaabbaca';
+var
+  c: Char;
+begin
+  Write('Testing SkipUntil (including) aabb in "' + TestString + '":');
+  for c in SkipUntil(Iterate(TestString), 'aabb', True) do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure SkipUntilNoOccurnaceTest;
+const
+  TestString = 'aabacdaa';
+var
+  c: Char;
+begin
+  Write('Testing SkipUntil abcd in "' + TestString + '":');
+  for c in SkipUntil(Iterate(TestString), 'abcd') do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure SkipUntilEmptySequence;
+const
+  TestString = 'Print All';
+var
+  c: Char;
+begin
+  Write('Testing SkipUntil [] in "' + TestString + '":');
+  for c in SkipUntil(Iterate(TestString), '') do
+    Write(' ', c);
+  WriteLn;
+end;
+
+procedure TestExpand;
+
+function DoubleExpand(AValue: Integer): IIterator<Integer>;
+begin
+  Result := Iterate<Integer>([AValue, AValue]);
+end;
+
+var
+  i: Integer;
+begin
+  Write('Testing double expand:');
+  for i in Expand<Integer, Integer>(Iterate<Integer>(Data), DoubleExpand) do
+    Write(' ', i);
+  WriteLn;
+end;
+
+procedure TestExpandArray;
+type
+  TIntArray = array of Integer;
+const
+  Arrays: Array of TIntArray = [[1, 2], [3], [4, 5]];
+var
+  i: Integer;
+begin
+  Write('Testing array expand [[1, 2], [3], [4, 5]]:');
+  for i in ExpandArrays<Integer>(Iterate<TIntArray>(Arrays)) do
+    Write(' ', i);
+  WriteLn;
+end; 
+
+procedure TestExpandStrings;
+const
+  Strings: Array of String = ['Foo', 'Bar', 'Baz'];
+var
+  str: String;
+begin
+  Write('Testing array expand ["Foo", "Bar", "Baz"]:');
+  for str in ExpandStrings(Iterate<String>(Strings)) do
+    Write(' ', str);
+  WriteLn;
+end;
+
 procedure ReduceTest;
 var
   sum: Integer;
@@ -291,6 +393,33 @@ begin
   Write('Testing Reduce Add: ');
   sum := Reduce<Integer>(Iterate<Integer>(Data), Add);
   WriteLn(sum);
+end; 
+
+procedure SumTest;
+var
+  s: Integer;
+begin
+  Write('Testing Sum: ');
+  s := Sum<Integer>(Iterate<Integer>(Data));
+  WriteLn(s);
+end;  
+
+procedure ProductTest;
+var
+  Prod: Integer;
+begin
+  Write('Testing Product: ');
+  Prod := Product<Integer>(Iterate<Integer>(Data));
+  WriteLn(Prod);
+end;
+
+procedure StringSumTest;
+var
+  s: String;
+begin
+  Write('Testing String Sum "a" "b" "c": ');
+  s := Sum<String>(IterateUTF8('abc'));
+  WriteLn(s);
 end;
 
 procedure CollectStringListTest;
@@ -444,7 +573,7 @@ end;
 
 procedure SingleCharSplitTest;
 const
-  DelimitedText = 'Slash/Delimited/Text';
+  DelimitedText = 'Slash/Delimited//Text';
 var
   str: String;
 begin
@@ -467,41 +596,173 @@ begin
   WriteLn;
 end;
 
+procedure SingleCharSplitCharTest;
+const
+  DelimitedText = 'Slash/Delimited//Text';
+var
+  str: String;
+begin
+  Write('Testing splitting (charwise) "' + DelimitedText + '":');
+  for str in Split(Iterate(DelimitedText), '/') do
+    Write(' "', str, '"');
+  WriteLn;
+end;
+
+procedure SequenceSplitCharTest;
+const
+  DelimitedText = 'aabaacbabba';
+  Delimiter = 'ab';
+var
+  str: String;
+begin
+  Write('Testing splitting (charwise) "' + DelimitedText + '" on "' + Delimiter + '":');
+  for str in Split(Iterate(DelimitedText), Delimiter) do
+    Write(' "', str, '"');
+  WriteLn;
+end;
+
+procedure SplitAndJoinTestSimple;
+const
+  DelimitedText = 'Slash/Delimited/Text';
+var
+  str: String;
+begin
+  Write('Testing split and join "' + DelimitedText + '": ');
+  str := Join(Split(DelimitedText, '/'), '\', False);
+  WriteLn(str);
+end;
+
+procedure SplitAndJoinTestGeom;
+const
+  DelimitedText = 'Slash/Delimited/Text';
+var
+  str: String;
+begin
+  Write('Testing split and join (geometric)"' + DelimitedText + '": ');
+  str := Join(Split(DelimitedText, '/'), '\');
+  WriteLn(str);
+end;
+
+procedure JoinCharsTestSimple;
+var
+  s: String;
+begin
+  Write('Testing Char Join "a" "b" "c": ');
+  s := Join(Iterate('abc'), False);
+  WriteLn(s);
+end; 
+
+procedure JoinCharsTestGeometric;
+var
+  s: String;
+begin
+  Write('Testing Char Join (geometric) "a" "b" "c": ');
+  s := Join(Iterate('abc'));
+  WriteLn(s);
+end;   
+
+procedure JoinStringTestSimple;
+var
+  s: String;
+begin
+  Write('Testing String Join "Foo" "Bar" "Baz": ');
+  s := Join(Iterate<String>(['Foo', 'Bar', 'Baz']), False);
+  WriteLn(s);
+end;
+
+procedure JoinStringTestGeometric;
+var
+  s: String;
+begin
+  Write('Testing String Join (geometric) "Foo" "Bar" "Baz": ');
+  s := Join(Iterate<String>(['Foo', 'Bar', 'Baz']));
+  WriteLn(s);
+end;
+
+procedure InBetweenTest;
+const
+  TestText = 'It should find (this) and also (that) but (not this(';
+var
+  str: String;
+begin
+  Write('Testing in between brackets "this" and "that":');
+  for str in InBetween(Iterate(TestText), '(', ')') do
+    Write(' ', str);
+  WriteLn;
+end;
+
 begin
   {$IfDef WINDOWS}
   SetConsoleOutputCP(DefaultSystemCodePage);
   {$EndIf}
   SetTextCodePage(Output, DefaultSystemCodePage);
 
+  // Base iterators
   IterateArrayTest; 
   IterateCharsTest;
   IterateStringListTest;
   IterateListTest;
   IterateGenericListTest;
   IterateObjectListTest;
+
+  // Utility functions
   IndexTest;
   ReverseTest;
   SortedTest;
   StepTest;
+
+  // Map & Filter
   FilterTest;
   MapTest;
+
+  // Take & Skip
   TakeTest;
   TakeWhileTest;
   TakeUntilTest;
   TakeUntilWithSequenceTest;
   TakeUntilNoOccurnaceTest;
+  TakeUntilEmptySequence;
   SkipTest;
   SkipWhileTest;
+  SkipUntilTest;
+  SkipUntilWithSequenceTest;
+  SkipUntilNoOccurnaceTest;
+  SkipUntilEmptySequence;
+
+  // Expand
+  TestExpand;
+  TestExpandArray;
+  TestExpandStrings;
+
+  // Reduce & Collect
   ReduceTest;
+  SumTest;
+  ProductTest;
+  StringSumTest;
   CollectStringListTest;
+
+  // Typing
   CastIteratorTest;
   ClassCastIteratorTest;
   FilterClassTest;
   MapClassTest;
+
+  // Strings
   UTF8Test;
   UTF8FromIteratorTest;
+  // Splitting
   SingleCharSplitTest;
-  SequenceSplitTest;
+  SequenceSplitTest;  
+  SingleCharSplitCharTest;
+  SequenceSplitCharTest;
+  InBetweenTest;
+  // Joining
+  SplitAndJoinTestSimple;
+  SplitAndJoinTestGeom;
+  JoinCharsTestSimple;
+  JoinCharsTestGeometric;
+  JoinStringTestSimple;
+  JoinStringTestGeometric;
 
   ReadLn;
 end.

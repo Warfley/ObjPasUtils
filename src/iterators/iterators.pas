@@ -6,9 +6,13 @@ unit iterators;
 interface
 
 uses
-  Classes, SysUtils, functypes, iterators.base, iterators.map, iterators.filter,
-  iterators.take, iterators.skip, iterators.typing, iterators.ordering, iterators.helper,
-  iterators.collector, iterators.strings, Generics.Collections, TupleTypes, NoneType, DynamicTypes;
+  Classes, SysUtils, functypes,
+
+  iterators.base, iterators.map, iterators.filter, iterators.take,
+  iterators.skip, iterators.typing, iterators.ordering, iterators.helper,
+  iterators.collector, iterators.strings, iterators.expand,
+
+  Generics.Collections, TupleTypes, NoneType, DynamicTypes;
 
 type
   EEndOfIterator = class(Exception);
@@ -19,12 +23,14 @@ generic function Iterate(const AString: String): specialize IIterator<Char>; ove
 generic function Iterate<T>(const AEnumarble: specialize IEnumerable<T>): specialize IIterator<T>; overload; inline;
 // Generics.collections support
 generic function Iterate<T>(const AEnumarble: specialize TEnumerable<T>): specialize IIterator<T>; overload; inline;
-generic function Iterate<T, U>(const ADictionairy: specialize TDictionary<T, U>): specialize IIterator<specialize TPair<T, U>>;
+//generic function Iterate<T, U>(const ADictionairy: specialize TDictionary<T, U>): specialize IIterator<specialize TPair<T, U>>;
 // Classic pascal containers
 function Iterate(const AStrings: TStrings): specialize IIterator<String>; overload; inline;
 function Iterate(const AList: Classes.TList): specialize IIterator<Pointer>; overload; inline;
 // String interators
-function Split(const AString: String; const ADelimiter: String): specialize IIterator<String>; inline;
+function Split(const AString: String; const ADelimiter: String): specialize IIterator<String>; overload; inline;
+function Split(AIterator: specialize IIterator<Char>; const ADelimiter: String): specialize IIterator<String>; overload; inline;
+function InBetween(AIterator: specialize IIterator<Char>; const AStart, AEnd: String): specialize IIterator<String>; overload; inline;
 function IterateUTF8(const AString: String): specialize IIterator<String>; inline; overload;
 function IterateUTF8(const AIterator: specialize IIterator<Char>): specialize IIterator<String>; inline; overload;
 
@@ -76,7 +82,9 @@ generic function TakeUntil<T>(AIterator: specialize IIterator<T>;
   const ASequence: specialize TArray<T>; AIncludeSequence: Boolean = False):
   specialize IIterator<T>; overload; inline;   
 generic function TakeUntil<T>(AIterator: specialize IIterator<T>;
-  const ASequence: array of T; AIncludeSequence: Boolean = False): specialize IIterator<T>; overload; inline;
+  const ASequence: array of T; AIncludeSequence: Boolean = False): specialize IIterator<T>; overload; inline; 
+function TakeUntil(AIterator: specialize IIterator<Char>; const ASequence: String;
+  AIncludeSequence: Boolean = False): specialize IIterator<Char>; overload; inline;
 
 // Skip and SkipWhile
 generic function Skip<T>(AIterator: specialize IIterator<T>; ACount: SizeInt):
@@ -93,6 +101,44 @@ generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
   AFunction: specialize TUnaryFunctionNested<Boolean, T>): specialize IIterator<T>; overload; inline;
 generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
   AFunction: specialize TConstUnaryFunctionNested<Boolean, T>): specialize IIterator<T>; overload; inline;
+generic function SkipUntil<T>(AIterator: specialize IIterator<T>;
+  const ASequence: specialize TArray<T>; ASkipSequence: Boolean = False):
+  specialize IIterator<T>; overload; inline;
+generic function SkipUntil<T>(AIterator: specialize IIterator<T>;
+  const ASequence: array of T; ASkipSequence: Boolean = False): specialize IIterator<T>; overload; inline;
+function SkipUntil(AIterator: specialize IIterator<Char>; const ASequence: String;
+  ASkipSequence: Boolean = False): specialize IIterator<Char>; overload; inline;
+
+// Expanding functions
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TUnaryFunction<specialize IIterator<TSource>, TSource>
+  ): specialize IIterator<TTarget>; overload; inline;
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TConstUnaryFunction<specialize IIterator<TSource>, TSource>
+  ): specialize IIterator<TTarget>; overload; inline;
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TUnaryFunctionMethod<specialize IIterator<TSource>, TSource>
+  ): specialize IIterator<TTarget>; overload; inline;
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TConstUnaryFunctionMethod<specialize IIterator<TSource>, TSource>
+  ): specialize IIterator<TTarget>; overload; inline;
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TUnaryFunctionNested<specialize IIterator<TSource>, TSource>
+  ): specialize IIterator<TTarget>; overload; inline;
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TConstUnaryFunctionNested<specialize IIterator<TTarget>, TSource>
+  ): specialize IIterator<TTarget>; overload; inline;
+
+// TODO: Add one type expand functions for implicit specialization?
+
+generic function ExpandArrays<T>(AIterator: specialize IIterator<specialize TArray<T>>): specialize IIterator<T>; inline;
+function ExpandStrings(AIterator: specialize IIterator<String>): specialize IIterator<Char>; inline;
 
 // Typing functions
 generic function Cast<TFrom, TTo>(AIterator: specialize IIterator<TFrom>): specialize IIterator<TTo>; overload; inline;
@@ -156,6 +202,13 @@ generic function Reduce<T>(AIterator: specialize IIterator<T>;
   AFunction: specialize TBinaryFunctionNested<T, T, T>): T; overload; inline;
 generic function Reduce<T>(AIterator: specialize IIterator<T>;
   AFunction: specialize TConstBinaryFunctionNested<T, T, T>): T; overload; inline;
+
+// special Reduce
+generic function Sum<T>(AIterator: specialize IIterator<T>): T; overload; inline;
+generic function Product<T>(AIterator: specialize IIterator<T>): T; overload; inline;
+function Join(AIterator: specialize IIterator<String>; const Delimiter: String; GeometricGrowth: Boolean = True): String; overload; inline;
+function Join(AIterator: specialize IIterator<Char>; GeometricGrowth: Boolean = True): String; overload; inline;
+function Join(AIterator: specialize IIterator<String>; GeometricGrowth: Boolean = True): String; overload; inline;
 
 // Collect
 generic function CollectArray<T>(AIterator: specialize IIterator<T>; GeometricGrowth: Boolean = True): specialize TArray<T>; inline;
@@ -230,10 +283,12 @@ begin
   Result := specialize TClassEnumeratorIterator<T, specialize TEnumerator<T>>.Create(AEnumarble.GetEnumerator);
 end;
 
+{ FIXME: This breaks lazarus codetools
 generic function Iterate<T, U>(const ADictionairy: specialize TDictionary<T, U>): specialize IIterator<Generics.Collections.specialize TPair<T, U>>;
 begin
   Result := specialize TClassEnumeratorIterator<Generics.Collections.specialize TPair<T, U>, specialize TDictionary<T, U>.TPairEnumerator>.Create(ADictionairy.GetEnumerator);
 end;
+}
 
 function Iterate(const AStrings: TStrings): specialize IIterator<String>;
 begin
@@ -251,6 +306,18 @@ function Split(const AString: String; const ADelimiter: String): specialize IIte
 begin
   Result := TStringSplitIterator.Create(AString, ADelimiter);
 end;    
+
+function Split(AIterator: specialize IIterator<Char>; const ADelimiter: String
+  ): specialize IIterator<String>;
+begin
+  Result := TCharSplitIterator.Create(AIterator, ADelimiter);
+end;
+
+function InBetween(AIterator: specialize IIterator<Char>; const AStart,
+  AEnd: String): specialize IIterator<String>;
+begin
+  Result := TInBetweenIterator.Create(AIterator, AStart, AEnd);
+end;
 
 function IterateUTF8(const AString: String): specialize IIterator<String>;
 begin
@@ -394,6 +461,13 @@ begin
   Result := specialize TTakeUntilIterator<T>.Create(AIterator, ASequence, AIncludeSequence);
 end;
 
+function TakeUntil(AIterator: specialize IIterator<Char>;
+  const ASequence: String; AIncludeSequence: Boolean): specialize IIterator<Char
+  >;
+begin
+  Result := TTakeUntilStringIterator.Create(AIterator, ASequence, AIncludeSequence);
+end;
+
 { Skip and SkipWhile Functions }
 
 generic function Skip<T>(AIterator: specialize IIterator<T>; ACount: SizeInt):
@@ -436,6 +510,85 @@ generic function SkipWhile<T>(AIterator: specialize IIterator<T>;
   AFunction: specialize TConstUnaryFunctionNested<Boolean, T>): specialize IIterator<T>;
 begin
   Result := specialize TSkipWhileIterator<T>.Create(AIterator, AFunction);
+end;
+
+generic function SkipUntil<T>(AIterator: specialize IIterator<T>;
+  const ASequence: specialize TArray<T>; ASkipSequence: Boolean):
+  specialize IIterator<T>;
+begin
+  Result := specialize TSkipUntilIterator<T>.Create(AIterator, ASequence, ASkipSequence);
+end;
+
+generic function SkipUntil<T>(AIterator: specialize IIterator<T>;
+  const ASequence: array of T; ASkipSequence: Boolean): specialize IIterator<T>;
+begin
+  Result := specialize TSkipUntilIterator<T>.Create(AIterator, ASequence, ASkipSequence);
+end;
+
+function SkipUntil(AIterator: specialize IIterator<Char>;
+  const ASequence: String; ASkipSequence: Boolean): specialize IIterator<Char>;
+begin
+  Result := TSkipUntilStringIterator.Create(AIterator, ASequence, ASkipSequence);
+end;
+
+{ Expand Functions }
+
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TUnaryFunction<specialize IIterator<TSource>, TSource>
+  ): specialize IIterator<TTarget>;
+begin
+  Result := specialize TExpandIterator<TSource, TTarget>.Create(AIterator, AExpandFunction);
+end;
+
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TConstUnaryFunction<specialize IIterator<TSource>, TSource>
+  ): specialize IIterator<TTarget>;
+begin
+  Result := specialize TExpandIterator<TSource, TTarget>.Create(AIterator, AExpandFunction);
+end;
+
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TUnaryFunctionMethod<specialize IIterator<TSource>, TSource>
+  ): specialize IIterator<TTarget>;
+begin
+  Result := specialize TExpandIterator<TSource, TTarget>.Create(AIterator, AExpandFunction);
+end;
+
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TConstUnaryFunctionMethod<specialize IIterator<TSource>, TSource>
+  ): specialize IIterator<TTarget>;
+begin
+  Result := specialize TExpandIterator<TSource, TTarget>.Create(AIterator, AExpandFunction);
+end;
+
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TUnaryFunctionNested<specialize IIterator<TSource>, TSource>
+  ): specialize IIterator<TTarget>;
+begin
+  Result := specialize TExpandIterator<TSource, TTarget>.Create(AIterator, AExpandFunction);
+end;
+
+generic function Expand<TSource, TTarget>(
+    AIterator: specialize IIterator<TSource>;
+    AExpandFunction: specialize TConstUnaryFunctionNested<specialize IIterator<TTarget>, TSource>
+  ): specialize IIterator<TTarget>;
+begin
+  Result := specialize TExpandIterator<TSource, TTarget>.Create(AIterator, AExpandFunction);
+end;
+
+generic function ExpandArrays<T>(AIterator: specialize IIterator<specialize TArray<T>>): specialize IIterator<T>;
+begin
+  Result := specialize TArrayExpandIterator<T>.Create(AIterator);
+end;
+
+function ExpandStrings(AIterator: specialize IIterator<String>): specialize IIterator<Char>;
+begin
+  Result := TExpandStringIterator.Create(AIterator);
 end;
 
 { Typing functions }
@@ -632,6 +785,52 @@ generic function Reduce<T>(AIterator: specialize IIterator<T>;
   AFunction: specialize TConstBinaryFunctionNested<T, T, T>): T;
 begin
   Result := specialize FoldLCollect<T, T>(AIterator, AFunction, Default(T));
+end;
+
+generic function Sum<T>(AIterator: specialize IIterator<T>): T;
+
+function _Add(const A, B: T): T;
+begin
+  Result := A + B;
+end;
+
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, @_Add, Default(T));
+end;
+
+generic function Product<T>(AIterator: specialize IIterator<T>): T;
+
+function _Mul(const A, B: T): T;
+begin
+  Result := A * B;
+end;
+
+begin
+  Result := specialize FoldLCollect<T, T>(AIterator, @_Mul, 1);
+end;
+
+function Join(AIterator: specialize IIterator<String>; const Delimiter: String; GeometricGrowth: Boolean): String;
+begin
+  if GeometricGrowth then
+    Result := JoinCollectGeometric(AIterator, Delimiter)
+  else
+    Result := JoinCollectLinear(AIterator, Delimiter);
+end; 
+
+function Join(AIterator: specialize IIterator<Char>; GeometricGrowth: Boolean): String;
+begin
+  if GeometricGrowth then
+    Result := CollectStringGeometric(AIterator)
+  else
+    Result := CollectStringLinear(AIterator);
+end;  
+
+function Join(AIterator: specialize IIterator<String>; GeometricGrowth: Boolean): String;
+begin
+  if GeometricGrowth then
+    Result := CollectStringGeometric(AIterator)
+  else
+    Result := CollectStringLinear(AIterator);
 end;
 
 { Collectors }

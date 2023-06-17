@@ -77,6 +77,10 @@
         <Filename Value="src\iterators\iterators.strings.pas"/>
         <UnitName Value="iterators.strings"/>
       </Item>
+      <Item>
+        <Filename Value="src\iterators\iterators.expand.pas"/>
+        <UnitName Value="iterators.expand"/>
+      </Item>
     </Files>
     <RequiredPkgs>
       <Item>
