@@ -8,7 +8,7 @@
       <Version Value="11"/>
       <PathDelim Value="\"/>
       <SearchPaths>
-        <OtherUnitFiles Value="src\dynamictypes;src\finalizers;src\iterators;src\functypes;src\tuple"/>
+        <OtherUnitFiles Value="src\dynamictypes;src\finalizers;src\iterators;src\functypes;src\tuple;src\range"/>
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
@@ -22,12 +22,20 @@
         <UnitName Value="DynamicTypes"/>
       </Item>
       <Item>
+        <Filename Value="src\dynamictypes\nonetype.pas"/>
+        <UnitName Value="nonetype"/>
+      </Item>
+      <Item>
         <Filename Value="src\finalizers\finalizers.pas"/>
         <UnitName Value="finalizers"/>
       </Item>
       <Item>
         <Filename Value="src\functypes\functypes.pas"/>
         <UnitName Value="functypes"/>
+      </Item>
+      <Item>
+        <Filename Value="src\range\ranges.pas"/>
+        <UnitName Value="ranges"/>
       </Item>
       <Item>
         <Filename Value="src\iterators\iterators.pas"/>
@@ -60,10 +68,6 @@
       <Item>
         <Filename Value="src\iterators\iterators.helper.pas"/>
         <UnitName Value="iterators.helper"/>
-      </Item>
-      <Item>
-        <Filename Value="src\dynamictypes\nonetype.pas"/>
-        <UnitName Value="nonetype"/>
       </Item>
       <Item>
         <Filename Value="src\iterators\iterators.collector.pas"/>

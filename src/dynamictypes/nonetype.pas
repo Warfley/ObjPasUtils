@@ -10,8 +10,8 @@ type
   TNoneType = record
   end;
 
-var
-  None: TNoneType;
+const
+  None: TNoneType = ();
 
 operator :=(None: TNoneType): Pointer; inline;
 operator :=(None: TNoneType): TObject; inline;
